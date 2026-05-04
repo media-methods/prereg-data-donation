@@ -1,2 +1,2 @@
 # prereg-data-donation
-Repository for the shiny app to build a data donation preregistration
+This repository is used to build a shiny app that helps researchers in preregistering their data donation study.
