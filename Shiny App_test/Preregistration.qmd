@@ -1,0 +1,42 @@
+---
+title: "Preregistration Data Donation Template"
+format:
+  pdf:
+    toc: false
+
+params:
+  title: ""
+  authors: ""
+  date: ""
+  license: ""
+---
+
+## Title:
+
+```{r}
+#| echo: false
+cat(params$title)
+```
+
+## Authors & Affiliations:
+
+```{r}
+#| echo: false
+cat(params$authors)
+```
+
+## Date of Preregistration:
+
+```{r}
+#| echo: false 
+cat(format(as.Date(params$date), "%B %d, %Y"))
+```
+
+## License (choose from the OSF license list)
+
+```{r}
+#| echo: false
+
+cat(params$license)
+
+```
