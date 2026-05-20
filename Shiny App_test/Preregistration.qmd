@@ -5,38 +5,399 @@ format:
     toc: false
 
 params:
+  # METADATA
   title: ""
   authors: ""
   date: ""
+  version_identifier: ""
   license: ""
+  keywords: ""
+  funding: ""
+  ethics: ""
+
+  # STUDY OVERVIEW
+  background: ""
+  objectives: ""
+  hypotheses: ""
+  exploratory_questions: ""
+  ddp_justification: ""
+
+  # DATA SOURCES
+  platform_tool: ""
+  access_method: ""
+  dataset_description: ""
+  download_dates: ""
+  availability: ""
+  prior_knowledge: ""
+  codebook: ""
+  collection_procedures: ""
+  privacy_security: ""
+
+  # SAMPLING
+  population: ""
+  recruitment: ""
+  sample_size: ""
+  stopping_rule: ""
+  representativeness: ""
+
+  # DATA STRUCTURE
+  raw_data_structure: ""
+  data_cleaning: ""
+  feature_extraction: ""
+  assumptions: ""
+  missing_data: ""
+
+  # STUDY DESIGN
+  study_type: ""
+  blinding: ""
+  design_description: ""
+  conditions: ""
+  randomization: ""
+
+  # MEASUREMENTS
+  independent_variables: ""
+  dependent_variables: ""
+  control_variables: ""
+  derived_variables: ""
+  platform_indicators: ""
+
+  # ANALYSIS
+  primary_analyses: ""
+  secondary_analyses: ""
+  inference_criteria: ""
+  modeling_parameters: ""
+  performance_measures: ""
+  software_packages: ""
+  reproducibility: ""
+
+  # RISKS
+  participant_risks: ""
+  risk_mitigation: ""
+  ethical_justification: ""
+
+  # OPEN SCIENCE
+  data_sharing: ""
+  code_sharing: ""
+  pipeline_documentation: ""
+  update_policy: ""
+
+  # REFERENCES
+  citations: ""
+  appendices: ""
 ---
 
-## Title:
 
+# Metadata:
+
+## Title:
 ```{r}
 #| echo: false
 cat(params$title)
 ```
-
 ## Authors & Affiliations:
-
 ```{r}
 #| echo: false
 cat(params$authors)
 ```
-
 ## Date of Preregistration:
-
 ```{r}
 #| echo: false 
 cat(format(as.Date(params$date), "%B %d, %Y"))
 ```
-
+## Version identifier
+```{r}
+#| echo: false
+cat(params$version_identifier)
+```
 ## License (choose from the OSF license list)
-
 ```{r}
 #| echo: false
 
 cat(params$license)
 
+```
+## Keywords
+```{r}
+#| echo: false
+cat(params$keywords)
+```
+## Funding
+```{r}
+#| echo: false
+cat(params$funding)
+```
+## Ethics
+```{r}
+#| echo: false
+cat(params$ethics)
+```
+
+# STUDY OVERVIEW
+## background
+```{r}
+#| echo: false
+cat(params$background)
+```
+## objectives
+```{r}
+#| echo: false
+cat(params$objectives)
+```
+## hypotheses
+```{r}
+#| echo: false
+cat(params$hypotheses)
+```
+## exploratory_questions
+```{r}
+#| echo: false
+cat(params$exploratory_questions)
+```
+## ddp_justification
+```{r}
+#| echo: false
+cat(params$ddp_justification)
+```
+ 
+# DATA SOURCES
+## platform_tool
+```{r}
+#| echo: false
+cat(params$platform_tool)
+```
+## access_method
+```{r}
+#| echo: false
+cat(params$access_method)
+```
+## dataset_description
+```{r}
+#| echo: false
+cat(params$dataset_description)
+```
+## download_dates
+```{r}
+#| echo: false
+cat(params$download_dates)
+```
+## availability
+```{r}
+#| echo: false
+cat(params$availability)
+```
+## prior_knowledge
+```{r}
+#| echo: false
+cat(params$prior_knowledge)
+```
+## codebook
+```{r}
+#| echo: false
+cat(params$codebook)
+```
+## collection_procedures
+```{r}
+#| echo: false
+cat(params$collection_procedures)
+```
+## privacy_security
+```{r}
+#| echo: false
+cat(params$privacy_security)
+```
+ 
+# SAMPLING
+## population
+```{r}
+#| echo: false
+cat(params$population)
+```
+## recruitment
+```{r}
+#| echo: false
+cat(params$recruitment)
+```
+## sample_size
+```{r}
+#| echo: false
+cat(params$sample_size)
+```
+## stopping_rule
+```{r}
+#| echo: false
+cat(params$stopping_rule)
+```
+## representativeness
+```{r}
+#| echo: false
+cat(params$representativeness)
+```
+ 
+# DATA STRUCTURE
+## raw_data_structure
+```{r}
+#| echo: false
+cat(params$raw_data_structure)
+```
+## data_cleaning
+```{r}
+#| echo: false
+cat(params$data_cleaning)
+```
+## feature_extraction
+```{r}
+#| echo: false
+cat(params$feature_extraction)
+```
+## assumptions
+```{r}
+#| echo: false
+cat(params$assumptions)
+```
+## missing_data
+```{r}
+#| echo: false
+cat(params$missing_data)
+```
+ 
+# STUDY DESIGN
+## study_type
+```{r}
+#| echo: false
+cat(params$study_type)
+```
+## blinding
+```{r}
+#| echo: false
+cat(params$blinding)
+```
+## design_description
+```{r}
+#| echo: false
+cat(params$design_description)
+```
+## conditions
+```{r}
+#| echo: false
+cat(params$conditions)
+```
+## randomization
+```{r}
+#| echo: false
+cat(params$randomization)
+```
+ 
+# MEASUREMENTS
+## independent_variables
+```{r}
+#| echo: false
+cat(params$independent_variables)
+```
+## dependent_variables
+```{r}
+#| echo: false
+cat(params$dependent_variables)
+```
+## control_variables
+```{r}
+#| echo: false
+cat(params$control_variables)
+```
+## derived_variables
+```{r}
+#| echo: false
+cat(params$derived_variables)
+```
+## platform_indicators
+```{r}
+#| echo: false
+cat(params$platform_indicators)
+```
+ 
+# ANALYSIS
+## primary_analyses
+```{r}
+#| echo: false
+cat(params$primary_analyses)
+```
+## secondary_analyses
+```{r}
+#| echo: false
+cat(params$secondary_analyses)
+```
+## inference_criteria
+```{r}
+#| echo: false
+cat(params$inference_criteria)
+```
+## modeling_parameters
+```{r}
+#| echo: false
+cat(params$modeling_parameters)
+```
+## performance_measures
+```{r}
+#| echo: false
+cat(params$performance_measures)
+```
+## software_packages
+```{r}
+#| echo: false
+cat(params$software_packages)
+```
+## reproducibility
+```{r}
+#| echo: false
+cat(params$reproducibility)
+```
+ 
+# RISKS
+## participant_risks
+```{r}
+#| echo: false
+cat(params$participant_risks)
+```
+## risk_mitigation
+```{r}
+#| echo: false
+cat(params$risk_mitigation)
+```
+## ethical_justification
+```{r}
+#| echo: false
+cat(params$ethical_justification)
+```
+ 
+# OPEN SCIENCE
+## data_sharing
+```{r}
+#| echo: false
+cat(params$data_sharing)
+```
+## code_sharing
+```{r}
+#| echo: false
+cat(params$code_sharing)
+```
+## pipeline_documentation
+```{r}
+#| echo: false
+cat(params$pipeline_documentation)
+```
+## update_policy
+```{r}
+#| echo: false
+cat(params$update_policy)
+```
+ 
+# REFERENCES
+## citations
+```{r}
+#| echo: false
+cat(params$citations)
+```
+## appendices
+```{r}
+#| echo: false
+cat(params$appendices)
 ```
