@@ -86,317 +86,431 @@ params:
   appendices: ""
 ---
 
-
 # Metadata:
 
 ## Title:
+
 ```{r}
 #| echo: false
 cat(params$title)
 ```
+
 ## Authors & Affiliations:
+
 ```{r}
 #| echo: false
 cat(params$authors)
 ```
+
 ## Date of Preregistration:
+
 ```{r}
 #| echo: false 
 cat(format(as.Date(params$date), "%B %d, %Y"))
 ```
+
 ## Version identifier
+
 ```{r}
 #| echo: false
 cat(params$version_identifier)
 ```
+
 ## License (choose from the OSF license list)
+
 ```{r}
 #| echo: false
 
 cat(params$license)
 
 ```
+
 ## Keywords
+
 ```{r}
 #| echo: false
 cat(params$keywords)
 ```
+
 ## Funding
+
 ```{r}
 #| echo: false
 cat(params$funding)
 ```
+
 ## Ethics
+
 ```{r}
 #| echo: false
 cat(params$ethics)
 ```
 
-# STUDY OVERVIEW
-## background
+# Study Overview
+
+## Background
+
 ```{r}
 #| echo: false
 cat(params$background)
 ```
-## objectives
+
+## Objectives
+
 ```{r}
 #| echo: false
 cat(params$objectives)
 ```
-## hypotheses
+
+## Hypotheses
+
 ```{r}
 #| echo: false
 cat(params$hypotheses)
 ```
-## exploratory_questions
+
+## Exploratory Questions
+
 ```{r}
 #| echo: false
 cat(params$exploratory_questions)
 ```
-## ddp_justification
+
+## DDP Justification
+
 ```{r}
 #| echo: false
 cat(params$ddp_justification)
 ```
- 
-# DATA SOURCES
-## platform_tool
+
+# Data sources
+
+## Platform Tools
+
 ```{r}
 #| echo: false
 cat(params$platform_tool)
 ```
-## access_method
+
+## Access Method
+
 ```{r}
 #| echo: false
 cat(params$access_method)
 ```
-## dataset_description
+
+## Dataset Description
+
 ```{r}
 #| echo: false
 cat(params$dataset_description)
 ```
-## download_dates
+
+## Download Dates
+
 ```{r}
 #| echo: false
 cat(params$download_dates)
 ```
-## availability
+
+## Availability
+
 ```{r}
 #| echo: false
 cat(params$availability)
 ```
-## prior_knowledge
+
+## Prior Knowledge
+
 ```{r}
 #| echo: false
 cat(params$prior_knowledge)
 ```
-## codebook
+
+## Codebook
+
 ```{r}
 #| echo: false
 cat(params$codebook)
 ```
-## collection_procedures
+
+## Collection Procedures
+
 ```{r}
 #| echo: false
 cat(params$collection_procedures)
 ```
-## privacy_security
+
+## Privacy Security
+
 ```{r}
 #| echo: false
 cat(params$privacy_security)
 ```
- 
-# SAMPLING
-## population
+
+# Sampling
+
+## Population
+
 ```{r}
 #| echo: false
 cat(params$population)
 ```
-## recruitment
+
+## Recruitment
+
 ```{r}
 #| echo: false
 cat(params$recruitment)
 ```
-## sample_size
+
+## Sample Size
+
 ```{r}
 #| echo: false
 cat(params$sample_size)
 ```
-## stopping_rule
+
+## Stopping Rule
+
 ```{r}
 #| echo: false
 cat(params$stopping_rule)
 ```
-## representativeness
+
+## Representativeness
+
 ```{r}
 #| echo: false
 cat(params$representativeness)
 ```
- 
-# DATA STRUCTURE
-## raw_data_structure
+
+# Data Structure
+
+## Raw Data Structure
+
 ```{r}
 #| echo: false
 cat(params$raw_data_structure)
 ```
-## data_cleaning
+
+## Data Cleaning
+
 ```{r}
 #| echo: false
 cat(params$data_cleaning)
 ```
-## feature_extraction
+
+## Feature Extraction
+
 ```{r}
 #| echo: false
 cat(params$feature_extraction)
 ```
-## assumptions
+
+## Assumptions
+
 ```{r}
 #| echo: false
 cat(params$assumptions)
 ```
-## missing_data
+
+## Missing Data
+
 ```{r}
 #| echo: false
 cat(params$missing_data)
 ```
- 
-# STUDY DESIGN
-## study_type
+
+# Study Design
+
+## Study Type
+
 ```{r}
 #| echo: false
 cat(params$study_type)
 ```
-## blinding
+
+## Blinding
+
 ```{r}
 #| echo: false
 cat(params$blinding)
 ```
-## design_description
+
+## Design Description
+
 ```{r}
 #| echo: false
 cat(params$design_description)
 ```
-## conditions
+
+## Conditions
+
 ```{r}
 #| echo: false
 cat(params$conditions)
 ```
-## randomization
+
+## Randomization
+
 ```{r}
 #| echo: false
 cat(params$randomization)
 ```
- 
-# MEASUREMENTS
-## independent_variables
+
+# Measurements
+
+## Independent Variables
+
 ```{r}
 #| echo: false
 cat(params$independent_variables)
 ```
-## dependent_variables
+
+## Dependent Variables
+
 ```{r}
 #| echo: false
 cat(params$dependent_variables)
 ```
-## control_variables
+
+## Control Variables
+
 ```{r}
 #| echo: false
 cat(params$control_variables)
 ```
-## derived_variables
+
+## Derived Variables
+
 ```{r}
 #| echo: false
 cat(params$derived_variables)
 ```
-## platform_indicators
+
+## Platform Indicators
+
 ```{r}
 #| echo: false
 cat(params$platform_indicators)
 ```
- 
-# ANALYSIS
-## primary_analyses
+
+# Analysis
+
+## Primary Analyses
+
 ```{r}
 #| echo: false
 cat(params$primary_analyses)
 ```
-## secondary_analyses
+
+## Secondary Analyses
+
 ```{r}
 #| echo: false
 cat(params$secondary_analyses)
 ```
-## inference_criteria
+
+## Inference Criteria
+
 ```{r}
 #| echo: false
 cat(params$inference_criteria)
 ```
-## modeling_parameters
+
+## Modeling Parameters
+
 ```{r}
 #| echo: false
 cat(params$modeling_parameters)
 ```
-## performance_measures
+
+## Performance Measures
+
 ```{r}
 #| echo: false
 cat(params$performance_measures)
 ```
-## software_packages
+
+## Software Packages
+
 ```{r}
 #| echo: false
 cat(params$software_packages)
 ```
-## reproducibility
+
+## Reproducibility
+
 ```{r}
 #| echo: false
 cat(params$reproducibility)
 ```
- 
-# RISKS
-## participant_risks
+
+# Risks
+
+## Participant Risks
+
 ```{r}
 #| echo: false
 cat(params$participant_risks)
 ```
-## risk_mitigation
+
+## Risk Mitigation
+
 ```{r}
 #| echo: false
 cat(params$risk_mitigation)
 ```
-## ethical_justification
+
+## Ethical Justification
+
 ```{r}
 #| echo: false
 cat(params$ethical_justification)
 ```
- 
-# OPEN SCIENCE
-## data_sharing
+
+# Open Science
+
+## Data Sharing
+
 ```{r}
 #| echo: false
 cat(params$data_sharing)
 ```
-## code_sharing
+
+## Code Sharing
+
 ```{r}
 #| echo: false
 cat(params$code_sharing)
 ```
-## pipeline_documentation
+
+## Pipeline documentation
+
 ```{r}
 #| echo: false
 cat(params$pipeline_documentation)
 ```
-## update_policy
+
+## Update Policy
+
 ```{r}
 #| echo: false
 cat(params$update_policy)
 ```
- 
-# REFERENCES
-## citations
+
+# References
+
+## Citations
+
 ```{r}
 #| echo: false
 cat(params$citations)
 ```
-## appendices
+
+## Appendices
+
 ```{r}
 #| echo: false
 cat(params$appendices)
