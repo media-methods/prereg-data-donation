@@ -9,6 +9,7 @@ library(bslib)
 library(lubridate)
 library(tinytex)
 
+#rsconnect::deployApp()
 
 # ====================================================================================
 # DESIGN
@@ -122,6 +123,8 @@ ui <- page_fluid(
           margin-bottom: 40px;
       
           box-shadow: 0 10px 35px rgba(15,23,42,0.06);
+          
+          
       }
       
       .nav-tabs .nav-item {
@@ -982,6 +985,7 @@ server <- function(input, output, session) {
     },
     
     content = function(file) {
+      
       temp_dir <- tempdir()
       temp_qmd <- file.path(temp_dir, "Preregistration.qmd")
       
@@ -991,16 +995,21 @@ server <- function(input, output, session) {
       params$download_pdf <- NULL
       params$fill_test <- NULL
       
-      result <- try(
-        quarto::quarto_render(
-          input = temp_qmd,
-          output_file = "Preregistration.pdf",
-          execute_params = params
-        ),
-        silent = FALSE
-      )
-      
-      print(result)
+      withProgress(message = "Generating PDF...", value = 0, {
+        
+        incProgress(0.2, detail = "Preparing document")
+        
+        result <- try(
+          quarto::quarto_render(
+            input = temp_qmd,
+            output_file = "Preregistration.pdf",
+            execute_params = params
+          ),
+          silent = FALSE
+        )
+        
+        incProgress(0.8, detail = "Finalizing PDF")
+      })
       
       pdf_path <- file.path(temp_dir, "Preregistration.pdf")
       
