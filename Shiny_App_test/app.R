@@ -9,7 +9,6 @@ library(bslib)
 library(lubridate)
 library(tinytex)
 
- #rsconnect::deployApp()
 
 # ====================================================================================
 # DESIGN
@@ -102,19 +101,42 @@ ui <- page_fluid(
       
       /* TABS */
       .nav-tabs {
-        flex-wrap: nowrap !important;
-        overflow-x: auto;
-        overflow-y: hidden;
-        white-space: nowrap;
-        border: none !important;
-        background: white;
-        border-radius: 22px;
-        padding: 16px;
-        margin-bottom: 40px;
-        box-shadow: 0 10px 35px rgba(15,23,42,0.06);
-        display: flex;
-        gap: 12px;
-        scrollbar-width: thin;
+          display: flex;
+      
+          flex-wrap: wrap !important;   
+      
+          overflow: visible;
+      
+          white-space: normal;
+      
+          gap: 12px;
+      
+          border: none !important;
+      
+          background: white;
+      
+          border-radius: 22px;
+      
+          padding: 16px;
+      
+          margin-bottom: 40px;
+      
+          box-shadow: 0 10px 35px rgba(15,23,42,0.06);
+      }
+      
+      .nav-tabs .nav-item {
+          flex: 0 0 auto;
+      }
+      
+      .nav-tabs .nav-link {
+      
+          white-space: normal !important;
+      
+          text-align: center;
+      
+          min-width: 220px;   /* adjust width */
+      
+          padding: 15px 24px;
       }
       
       .nav-tabs::-webkit-scrollbar {
@@ -171,8 +193,7 @@ ui <- page_fluid(
       }
       
       .card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 18px 46px rgba(15,23,42,0.10);
+       transform: none !important;
       }
       
       .card-header {
@@ -861,7 +882,7 @@ ui <- page_fluid(
 server <- function(input, output, session) {
   
   # Autofill 
-  fill_textareas <- function(ids, value = "Test content") {
+  fill_textareas <- function(ids, value = "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim. Donec pede justo, fringilla vel, aliquet nec, vulputate eget, arcu. In enim justo, rhoncus ut, imperdiet a, venenatis vitae, justo. Nullam dictum felis eu pede mollis pretium. Integer tincidunt. Cras dapibus. Vivamus elementum semper nisi. Aenean vulputate eleifend tellus. Aenean leo ligula, porttitor eu, consequat vitae, eleifend ac, enim. Aliquam lorem ante, dapibus in, viverra quis, feugiat a, tellus. Phasellus viverra nulla ut metus varius laoreet. Quisque rutrum. Aenean imperdiet. Etiam ultricies nisi vel augue. Curabitur ullamcorper ultricies nisi. Nam eget dui. Etiam rhoncus. Maecenas tempus, tellus eget condimentum rhoncus, sem quam semper libero, sit amet adipiscing sem neque sed ipsum. Nam quam nunc, blandit vel, luctus pulvinar, hendrerit id, lorem. Maecenas nec odio et ante tincidunt tempus. Donec vitae sapien ut libero venenatis faucibus. Nullam quis ante. Etiam sit amet orci eget eros faucibus tincidunt. Duis leo. Sed fringilla mauris sit amet nibh. Donec sodales sagittis magna. Sed consequat, leo eget bibendum sodales, augue velit cursus nunc,") {
     lapply(ids, function(id) {
       updateTextAreaInput(session, id, value = paste(value, "-", "TEST"))
     })

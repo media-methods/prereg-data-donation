@@ -2,8 +2,60 @@
 title: "Preregistration Data Donation Template"
 format:
   pdf:
-    toc: false
+    toc: true
+    toc-depth: 2
 
+    number-sections: false
+
+    colorlinks: false
+
+    geometry:
+      - margin=1in
+
+    fontsize: 11pt
+
+    documentclass: scrartcl
+
+    papersize: a4
+
+    titlepage: true
+
+    include-in-header:
+      text: |
+        \usepackage{xcolor}
+        \definecolor{black}{HTML}{2B6CB0}
+
+        \usepackage{titlesec}
+
+        \titleformat{\section}
+        {\Large\bfseries\color{black}}
+        {\thesection}
+        {1em}
+        {}
+
+        \titleformat{\subsection}
+        {\large\bfseries}
+        {}
+        {0em}
+        {}
+
+        \usepackage{tcolorbox}
+
+        \tcbset{
+          colback=black!2,
+          colframe=black!25,
+          arc=3mm
+        }
+         \usepackage{etoolbox}
+
+        \makeatletter
+        \patchcmd{\tableofcontents}
+          {\endgroup}
+          {\endgroup\clearpage}
+          {}{}
+        \makeatother
+
+  
 params:
   # METADATA
   title: ""
@@ -86,20 +138,38 @@ params:
   appendices: ""
 ---
 
+```{r}
+#| include: false
+
+render_text <- function(x, width = 80) {
+
+  if (is.null(x) || x == "") return(invisible())
+
+  cat(
+    strwrap(
+      x,
+      width = width
+    ),
+    sep = "\n"
+  )
+}
+```
+
+
 # Metadata:
 
 ## Title:
 
 ```{r}
 #| echo: false
-cat(params$title)
+  render_text(params$title)
 ```
 
 ## Authors & Affiliations:
 
 ```{r}
 #| echo: false
-cat(params$authors)
+render_text(params$authors)
 ```
 
 ## Date of Preregistration:
@@ -113,7 +183,7 @@ cat(format(as.Date(params$date), "%B %d, %Y"))
 
 ```{r}
 #| echo: false
-cat(params$version_identifier)
+render_text(params$version_identifier)
 ```
 
 ## License (choose from the OSF license list)
@@ -121,7 +191,7 @@ cat(params$version_identifier)
 ```{r}
 #| echo: false
 
-cat(params$license)
+render_text(params$license)
 
 ```
 
@@ -129,389 +199,399 @@ cat(params$license)
 
 ```{r}
 #| echo: false
-cat(params$keywords)
+render_text(params$keywords)
 ```
 
 ## Funding
 
 ```{r}
 #| echo: false
-cat(params$funding)
+render_text(params$funding)
 ```
 
 ## Ethics
 
 ```{r}
 #| echo: false
-cat(params$ethics)
+render_text(params$ethics)
 ```
 
+\clearpage
 # Study Overview
 
 ## Background
 
 ```{r}
 #| echo: false
-cat(params$background)
+render_text(params$background)
 ```
 
 ## Objectives
 
 ```{r}
 #| echo: false
-cat(params$objectives)
+render_text(params$objectives)
 ```
 
 ## Hypotheses
 
 ```{r}
 #| echo: false
-cat(params$hypotheses)
+render_text(params$hypotheses)
 ```
 
 ## Exploratory Questions
 
 ```{r}
 #| echo: false
-cat(params$exploratory_questions)
+render_text(params$exploratory_questions)
 ```
 
 ## DDP Justification
 
 ```{r}
 #| echo: false
-cat(params$ddp_justification)
+render_text(params$ddp_justification)
 ```
 
+\clearpage
 # Data sources
 
 ## Platform Tools
 
 ```{r}
 #| echo: false
-cat(params$platform_tool)
+render_text(params$platform_tool)
 ```
 
 ## Access Method
 
 ```{r}
 #| echo: false
-cat(params$access_method)
+render_text(params$access_method)
 ```
 
 ## Dataset Description
 
 ```{r}
 #| echo: false
-cat(params$dataset_description)
+render_text(params$dataset_description)
 ```
 
 ## Download Dates
 
 ```{r}
 #| echo: false
-cat(params$download_dates)
+render_text(params$download_dates)
 ```
 
 ## Availability
 
 ```{r}
 #| echo: false
-cat(params$availability)
+render_text(params$availability)
 ```
 
 ## Prior Knowledge
 
 ```{r}
 #| echo: false
-cat(params$prior_knowledge)
+render_text(params$prior_knowledge)
 ```
 
 ## Codebook
 
 ```{r}
 #| echo: false
-cat(params$codebook)
+render_text(params$codebook)
 ```
 
 ## Collection Procedures
 
 ```{r}
 #| echo: false
-cat(params$collection_procedures)
+render_text(params$collection_procedures)
 ```
 
 ## Privacy Security
 
 ```{r}
 #| echo: false
-cat(params$privacy_security)
+render_text(params$privacy_security)
 ```
 
+\clearpage
 # Sampling
 
 ## Population
 
 ```{r}
 #| echo: false
-cat(params$population)
+render_text(params$population)
 ```
 
 ## Recruitment
 
 ```{r}
 #| echo: false
-cat(params$recruitment)
+render_text(params$recruitment)
 ```
 
 ## Sample Size
 
 ```{r}
 #| echo: false
-cat(params$sample_size)
+render_text(params$sample_size)
 ```
 
 ## Stopping Rule
 
 ```{r}
 #| echo: false
-cat(params$stopping_rule)
+render_text(params$stopping_rule)
 ```
 
 ## Representativeness
 
 ```{r}
 #| echo: false
-cat(params$representativeness)
+render_text(params$representativeness)
 ```
 
+\clearpage
 # Data Structure
 
 ## Raw Data Structure
 
 ```{r}
 #| echo: false
-cat(params$raw_data_structure)
+render_text(params$raw_data_structure)
 ```
 
 ## Data Cleaning
 
 ```{r}
 #| echo: false
-cat(params$data_cleaning)
+render_text(params$data_cleaning)
 ```
 
 ## Feature Extraction
 
 ```{r}
 #| echo: false
-cat(params$feature_extraction)
+render_text(params$feature_extraction)
 ```
 
 ## Assumptions
 
 ```{r}
 #| echo: false
-cat(params$assumptions)
+render_text(params$assumptions)
 ```
 
 ## Missing Data
 
 ```{r}
 #| echo: false
-cat(params$missing_data)
+render_text(params$missing_data)
 ```
 
+\clearpage
 # Study Design
 
 ## Study Type
 
 ```{r}
 #| echo: false
-cat(params$study_type)
+render_text(params$study_type)
 ```
 
 ## Blinding
 
 ```{r}
 #| echo: false
-cat(params$blinding)
+render_text(params$blinding)
 ```
 
 ## Design Description
 
 ```{r}
 #| echo: false
-cat(params$design_description)
+render_text(params$design_description)
 ```
 
 ## Conditions
 
 ```{r}
 #| echo: false
-cat(params$conditions)
+render_text(params$conditions)
 ```
 
 ## Randomization
 
 ```{r}
 #| echo: false
-cat(params$randomization)
+render_text(params$randomization)
 ```
 
+\clearpage
 # Measurements
 
 ## Independent Variables
 
 ```{r}
 #| echo: false
-cat(params$independent_variables)
+render_text(params$independent_variables)
 ```
 
 ## Dependent Variables
 
 ```{r}
 #| echo: false
-cat(params$dependent_variables)
+render_text(params$dependent_variables)
 ```
 
 ## Control Variables
 
 ```{r}
 #| echo: false
-cat(params$control_variables)
+render_text(params$control_variables)
 ```
 
 ## Derived Variables
 
 ```{r}
 #| echo: false
-cat(params$derived_variables)
+render_text(params$derived_variables)
 ```
 
 ## Platform Indicators
 
 ```{r}
 #| echo: false
-cat(params$platform_indicators)
+render_text(params$platform_indicators)
 ```
 
+\clearpage
 # Analysis
 
 ## Primary Analyses
 
 ```{r}
 #| echo: false
-cat(params$primary_analyses)
+render_text(params$primary_analyses)
 ```
 
 ## Secondary Analyses
 
 ```{r}
 #| echo: false
-cat(params$secondary_analyses)
+render_text(params$secondary_analyses)
 ```
 
 ## Inference Criteria
 
 ```{r}
 #| echo: false
-cat(params$inference_criteria)
+render_text(params$inference_criteria)
 ```
 
 ## Modeling Parameters
 
 ```{r}
 #| echo: false
-cat(params$modeling_parameters)
+render_text(params$modeling_parameters)
 ```
 
 ## Performance Measures
 
 ```{r}
 #| echo: false
-cat(params$performance_measures)
+render_text(params$performance_measures)
 ```
 
 ## Software Packages
 
 ```{r}
 #| echo: false
-cat(params$software_packages)
+render_text(params$software_packages)
 ```
 
 ## Reproducibility
 
 ```{r}
 #| echo: false
-cat(params$reproducibility)
+render_text(params$reproducibility)
 ```
 
+\clearpage
 # Risks
 
 ## Participant Risks
 
 ```{r}
 #| echo: false
-cat(params$participant_risks)
+render_text(params$participant_risks)
 ```
 
 ## Risk Mitigation
 
 ```{r}
 #| echo: false
-cat(params$risk_mitigation)
+render_text(params$risk_mitigation)
 ```
 
 ## Ethical Justification
 
 ```{r}
 #| echo: false
-cat(params$ethical_justification)
+render_text(params$ethical_justification)
 ```
 
+\clearpage
 # Open Science
 
 ## Data Sharing
 
 ```{r}
 #| echo: false
-cat(params$data_sharing)
+render_text(params$data_sharing)
 ```
 
 ## Code Sharing
 
 ```{r}
 #| echo: false
-cat(params$code_sharing)
+render_text(params$code_sharing)
 ```
 
 ## Pipeline documentation
 
 ```{r}
 #| echo: false
-cat(params$pipeline_documentation)
+render_text(params$pipeline_documentation)
 ```
 
 ## Update Policy
 
 ```{r}
 #| echo: false
-cat(params$update_policy)
+render_text(params$update_policy)
 ```
 
+\clearpage
 # References
 
 ## Citations
 
 ```{r}
 #| echo: false
-cat(params$citations)
+render_text(params$citations)
 ```
 
 ## Appendices
 
 ```{r}
 #| echo: false
-cat(params$appendices)
+render_text(params$appendices)
 ```
