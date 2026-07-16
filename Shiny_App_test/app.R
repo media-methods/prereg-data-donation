@@ -445,7 +445,7 @@ ui <- page_fluid(
           
           textAreaInput(
             "ethics",
-            "8. Ethics Approval / IRB Status"
+            "6. Ethics Approval / IRB Status"
           )
         )
       ),
