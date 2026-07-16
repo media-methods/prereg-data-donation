@@ -412,14 +412,10 @@ ui <- page_fluid(
             value = NULL
           ),
           
-          textInput(
-            "version_identifier",
-            "4. Version & Identifier (DOI or OSF link)"
-          ),
           
           selectInput(
             "license",
-            "5. License",
+            "4. License",
             choices = c(
               "No License" = "No License",
               "Academic Free License 3.0" = "Academic Free License 3.0",
@@ -443,13 +439,9 @@ ui <- page_fluid(
           
           textInput(
             "keywords",
-            "6. Keywords / Tags"
+            "5. Keywords / Tags"
           ),
           
-          textAreaInput(
-            "funding",
-            "7. Funding & Conflict of Interest Statement"
-          ),
           
           textAreaInput(
             "ethics",
