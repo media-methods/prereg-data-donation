@@ -463,11 +463,11 @@ ui <- page_fluid(
             textInput("title", label = NULL)),
           
           field("2. Authors & Affiliations",
-            "List all authors and their institutional affiliations.",
+            "List all authors and their institutional affiliations. If possible, add ORCID-numbers for identification.",
             textInput("authors", label = NULL)),
           
           field("3. Date of Preregistration",
-            "The date this preregistration was created.",
+            "Add the date this preregistration was created (auto-generated to be the current date).",
             dateInput("date", label = NULL, value = NULL)),
           
           field("4. License",
@@ -505,12 +505,8 @@ ui <- page_fluid(
               )
             )),
           
-          field("5. Keywords / Tags",
-            "A few comma-separated terms describing the study.",
-            textInput("keywords", label = NULL)),
-          
-          field("6. Ethics Approval / IRB Status",
-            "State the approving body and reference number, or why approval was not required.",
+                    field("5. Ethics Approval / IRB Status",
+            "State the approving body and reference number (or why approval was not required).",
             textAreaInput("ethics", label = NULL))
         )
       ),
