@@ -15,6 +15,12 @@ library(tinytex)
 # DESIGN
 # ====================================================================================
 
+# Helper: build an input label with a small grey hint underneath.
+lbl <- function(title, hint = NULL) {
+  if (is.null(hint)) return(title)
+  tagList(title, tags$span(class = "field-hint", hint))
+}
+
 ui <- page_fluid(
   
   theme = bs_theme(
@@ -354,6 +360,16 @@ ui <- page_fluid(
         }
       }
       
+      /* smaller grey helper text under each field label */
+      .field-hint {
+        display: block;
+        font-size: 0.82em;
+        font-weight: 400;
+        color: #8A94A6;
+        margin-top: 2px;
+        line-height: 1.35;
+      }
+      
     "))
   ),
   
@@ -402,20 +418,24 @@ ui <- page_fluid(
           
           card_header("Metadata"),
           
-          textInput("title", "1. Title"),
+          textInput("title", lbl("1. Title",
+            "Use an informative title for the study.")),
           
-          textInput("authors", "2. Authors & Affiliations"),
+          textInput("authors", lbl("2. Authors & Affiliations",
+            "List all authors and their institutional affiliations.")),
           
           dateInput(
             "date",
-            "3. Date of Preregistration",
+            lbl("3. Date of Preregistration",
+              "The date this preregistration was created."),
             value = NULL
           ),
           
           
           selectInput(
             "license",
-            "4. License",
+            lbl("4. License",
+              "Choose how others may reuse your materials."),
             choices = c(
               "No License" = "No License",
               "Academic Free License 3.0" = "Academic Free License 3.0",
@@ -439,13 +459,15 @@ ui <- page_fluid(
           
           textInput(
             "keywords",
-            "5. Keywords / Tags"
+            lbl("5. Keywords / Tags",
+              "A few comma-separated terms describing the study.")
           ),
           
           
           textAreaInput(
             "ethics",
-            "6. Ethics Approval / IRB Status"
+            lbl("6. Ethics Approval / IRB Status",
+              "State the approving body and reference number, or why approval was not required.")
           )
         )
       ),
