@@ -392,6 +392,13 @@ ui <- page_fluid(
         margin: 0 0 8px 0;
         line-height: 1.35;
       }
+      /* links inside a hint match the blue of the title box */
+      .field-with-hint .field-hint a,
+      .field-with-hint .field-hint a:hover,
+      .field-with-hint .field-hint a:focus {
+        color: #1E3A5F !important;
+        text-decoration: underline;
+      }
       /* the input's own (now empty) label must not render as a second blue box */
       .field-with-hint .form-group > .control-label,
       .field-with-hint .shiny-input-container > .control-label {
@@ -464,8 +471,17 @@ ui <- page_fluid(
             dateInput("date", label = NULL, value = NULL)),
           
           field("4. License",
-            "Choose how others may reuse your materials.",
-            selectInput(
+                tagList(
+                  "Choose how others may reuse your materials. See ",
+                  tags$a(
+                    href = "https://help.osf.io/article/148-licensing#license",
+                    target = "_blank",
+                    rel = "noopener",
+                    "OSF's licensing guide"
+                  ),
+                  " for descriptions of each option."
+                ),
+                selectInput(
               "license",
               label = NULL,
               choices = c(
@@ -474,11 +490,11 @@ ui <- page_fluid(
                 "Apache License 2.0" = "Apache License 2.0",
                 "Artistic License 2.0" = "Artistic License 2.0",
                 "BSD 2-Clause \"Simplified\" License" = "BSD 2-Clause \"Simplified\" License",
-                "BSD 3-Clause \"New/Revised\" License" = "BSD 3-Clause \"New/Revised\" License",
-                "CC-By Attribution 4.0 International" = "CC-By Attribution 4.0 International",
-                "CC0 1.0 Universal" = "CC0 1.0 Universal",
-                "CC-By Attribution-NonCommercial-NoDerivatives 4.0 International" = "CC-By Attribution-NonCommercial-NoDerivatives 4.0 International",
+                "BSD 3-Clause \"New\"/\"Revised\" License" = "BSD 3-Clause \"New\"/\"Revised\" License",
+                "CC-By-Attribution 4.0 International" = "CC-By-Attribution 4.0 International",
+                "CC-By-Attribution-NonCommercial-NoDerivatives 4.0 International" = "CC-By-Attribution-NonCommercial-NoDerivatives 4.0 International",
                 "CC-By Attribution-ShareAlike 4.0 International" = "CC-By Attribution-ShareAlike 4.0 International",
+                "CC0 1.0 Universal" = "CC0 1.0 Universal",
                 "Eclipse Public License 1.0" = "Eclipse Public License 1.0",
                 "GNU General Public License (GPL) 2.0" = "GNU General Public License (GPL) 2.0",
                 "GNU General Public License (GPL) 3.0" = "GNU General Public License (GPL) 3.0",
