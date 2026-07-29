@@ -507,7 +507,7 @@ ui <- page_fluid(
           
                     field("5. Ethics Approval / IRB Status",
             "State the approving body and reference number (or why approval was not required).",
-            textAreaInput("ethics", label = NULL))
+            textInput("ethics", label = NULL))
         )
       ),
       
@@ -524,25 +524,14 @@ ui <- page_fluid(
           
           card_header("Study Overview"),
           
-          field("1. Background & Rationale (theoretical framework, prior work)",
-            "Summarize the theoretical framework and prior work that motivate this study.",
+          field("1. Background & Rationale",
+            "If needed, add information on what the study aims to test and the general study design.",
             textAreaInput("background", label = NULL)),
           
-          field("2. Objectives & Research Questions",
-            "State what the study aims to achieve and the questions it addresses.",
+          field("2. Research Questions or Hypotheses",
+            "What research questions or hypotheses are you planning to evaluate? List them separately.",
             textAreaInput("objectives", label = NULL)),
           
-          field("3. Hypotheses (directional/non-directional; confirmatory/exploratory)",
-            "List your hypotheses and mark each as confirmatory or exploratory.",
-            textAreaInput("hypotheses", label = NULL)),
-          
-          field("4. Exploratory Research Questions (if applicable)",
-            "Note any additional questions explored without formal hypotheses.",
-            textAreaInput("exploratory_questions", label = NULL)),
-          
-          field("5. Theoretical Justification for DDP use (why data donation is needed over other data sources)",
-            "Explain why data donation is necessary rather than other data sources.",
-            textAreaInput("ddp_justification", label = NULL))
         )
       ),
       
@@ -902,18 +891,12 @@ server <- function(input, output, session) {
       "title",
       "authors",
       "date",
-      "version_identifier",
       "license",
-      "keywords",
-      "funding",
       "ethics",
       
       # STUDY OVERVIEW
       "background",
-      "objectives",
-      "hypotheses",
-      "exploratory_questions",
-      "ddp_justification",
+      "questions_hypotheses",
       
       # DATA SOURCES
       "platform_tool",
