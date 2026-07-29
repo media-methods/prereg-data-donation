@@ -7,7 +7,6 @@ library(shiny)
 library(quarto)
 library(bslib)
 library(lubridate)
-library(tinytex)
 
 #rsconnect::deployApp()
 
@@ -15,10 +14,15 @@ library(tinytex)
 # DESIGN
 # ====================================================================================
 
-# Helper: build an input label with a small grey hint underneath.
-lbl <- function(title, hint = NULL) {
-  if (is.null(hint)) return(title)
-  tagList(title, tags$span(class = "field-hint", hint))
+# Helper: render a bold title, a grey hint paragraph, then the input box.
+# Pass the input with label = NULL so the title/hint above are the only labels.
+field <- function(title, hint, input_tag) {
+  div(
+    class = "field-with-hint",
+    tags$label(class = "field-title", title),
+    tags$p(class = "field-hint", hint),
+    input_tag
+  )
 }
 
 ui <- page_fluid(
@@ -360,14 +364,43 @@ ui <- page_fluid(
         }
       }
       
-      /* smaller grey helper text under each field label */
-      .field-hint {
+      /* field wrapper: blue title box, grey hint, then the input box */
+      .field-with-hint {
+        margin-bottom: 16px;
+      }
+      /* the title styled as the blue rounded box */
+      .field-with-hint .field-title {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #EDF4FF;
+        color: #1E3A5F;
+        border-radius: 14px;
+        padding: 12px 18px;
+        font-size: 14px;
+        font-weight: 700;
+        line-height: 1.5;
+        width: 100%;
+        border: 1px solid #D7E7FF;
+        margin-bottom: 8px;
+      }
+      .field-with-hint .field-hint {
         display: block;
         font-size: 0.82em;
         font-weight: 400;
         color: #8A94A6;
-        margin-top: 2px;
+        margin: 0 0 8px 0;
         line-height: 1.35;
+      }
+      /* the input's own (now empty) label must not render as a second blue box */
+      .field-with-hint .form-group > .control-label,
+      .field-with-hint .shiny-input-container > .control-label {
+        display: none !important;
+      }
+      /* input's own form-group loses its default label spacing */
+      .field-with-hint .form-group,
+      .field-with-hint .shiny-input-container {
+        margin-bottom: 0 !important;
       }
       
     "))
@@ -418,57 +451,51 @@ ui <- page_fluid(
           
           card_header("Metadata"),
           
-          textInput("title", lbl("1. Title",
-            "Use an informative title for the study.")),
+          field("1. Title",
+            "Use an informative title for the study.",
+            textInput("title", label = NULL)),
           
-          textInput("authors", lbl("2. Authors & Affiliations",
-            "List all authors and their institutional affiliations.")),
+          field("2. Authors & Affiliations",
+            "List all authors and their institutional affiliations.",
+            textInput("authors", label = NULL)),
           
-          dateInput(
-            "date",
-            lbl("3. Date of Preregistration",
-              "The date this preregistration was created."),
-            value = NULL
-          ),
+          field("3. Date of Preregistration",
+            "The date this preregistration was created.",
+            dateInput("date", label = NULL, value = NULL)),
           
+          field("4. License",
+            "Choose how others may reuse your materials.",
+            selectInput(
+              "license",
+              label = NULL,
+              choices = c(
+                "No License" = "No License",
+                "Academic Free License 3.0" = "Academic Free License 3.0",
+                "Apache License 2.0" = "Apache License 2.0",
+                "Artistic License 2.0" = "Artistic License 2.0",
+                "BSD 2-Clause \"Simplified\" License" = "BSD 2-Clause \"Simplified\" License",
+                "BSD 3-Clause \"New/Revised\" License" = "BSD 3-Clause \"New/Revised\" License",
+                "CC-By Attribution 4.0 International" = "CC-By Attribution 4.0 International",
+                "CC0 1.0 Universal" = "CC0 1.0 Universal",
+                "CC-By Attribution-NonCommercial-NoDerivatives 4.0 International" = "CC-By Attribution-NonCommercial-NoDerivatives 4.0 International",
+                "CC-By Attribution-ShareAlike 4.0 International" = "CC-By Attribution-ShareAlike 4.0 International",
+                "Eclipse Public License 1.0" = "Eclipse Public License 1.0",
+                "GNU General Public License (GPL) 2.0" = "GNU General Public License (GPL) 2.0",
+                "GNU General Public License (GPL) 3.0" = "GNU General Public License (GPL) 3.0",
+                "GNU Lesser General Public License (LGPL) 2.1" = "GNU Lesser General Public License (LGPL) 2.1",
+                "GNU Lesser General Public License (LGPL) 3.0" = "GNU Lesser General Public License (LGPL) 3.0",
+                "MIT License" = "MIT License",
+                "Mozilla Public License 2.0" = "Mozilla Public License 2.0"
+              )
+            )),
           
-          selectInput(
-            "license",
-            lbl("4. License",
-              "Choose how others may reuse your materials."),
-            choices = c(
-              "No License" = "No License",
-              "Academic Free License 3.0" = "Academic Free License 3.0",
-              "Apache License 2.0" = "Apache License 2.0",
-              "Artistic License 2.0" = "Artistic License 2.0",
-              "BSD 2-Clause \"Simplified\" License" = "BSD 2-Clause \"Simplified\" License",
-              "BSD 3-Clause \"New/Revised\" License" = "BSD 3-Clause \"New/Revised\" License",
-              "CC-By Attribution 4.0 International" = "CC-By Attribution 4.0 International",
-              "CC0 1.0 Universal" = "CC0 1.0 Universal",
-              "CC-By Attribution-NonCommercial-NoDerivatives 4.0 International" = "CC-By Attribution-NonCommercial-NoDerivatives 4.0 International",
-              "CC-By Attribution-ShareAlike 4.0 International" = "CC-By Attribution-ShareAlike 4.0 International",
-              "Eclipse Public License 1.0" = "Eclipse Public License 1.0",
-              "GNU General Public License (GPL) 2.0" = "GNU General Public License (GPL) 2.0",
-              "GNU General Public License (GPL) 3.0" = "GNU General Public License (GPL) 3.0",
-              "GNU Lesser General Public License (LGPL) 2.1" = "GNU Lesser General Public License (LGPL) 2.1",
-              "GNU Lesser General Public License (LGPL) 3.0" = "GNU Lesser General Public License (LGPL) 3.0",
-              "MIT License" = "MIT License",
-              "Mozilla Public License 2.0" = "Mozilla Public License 2.0"
-            )
-          ),
+          field("5. Keywords / Tags",
+            "A few comma-separated terms describing the study.",
+            textInput("keywords", label = NULL)),
           
-          textInput(
-            "keywords",
-            lbl("5. Keywords / Tags",
-              "A few comma-separated terms describing the study.")
-          ),
-          
-          
-          textAreaInput(
-            "ethics",
-            lbl("6. Ethics Approval / IRB Status",
-              "State the approving body and reference number, or why approval was not required.")
-          )
+          field("6. Ethics Approval / IRB Status",
+            "State the approving body and reference number, or why approval was not required.",
+            textAreaInput("ethics", label = NULL))
         )
       ),
       
@@ -485,30 +512,25 @@ ui <- page_fluid(
           
           card_header("Study Overview"),
           
-          textAreaInput(
-            "background",
-            "1. Background & Rationale (theoretical framework, prior work)"
-          ),
+          field("1. Background & Rationale (theoretical framework, prior work)",
+            "Summarize the theoretical framework and prior work that motivate this study.",
+            textAreaInput("background", label = NULL)),
           
-          textAreaInput(
-            "objectives",
-            "2. Objectives & Research Questions"
-          ),
+          field("2. Objectives & Research Questions",
+            "State what the study aims to achieve and the questions it addresses.",
+            textAreaInput("objectives", label = NULL)),
           
-          textAreaInput(
-            "hypotheses",
-            "3. Hypotheses (directional/non-directional; confirmatory/exploratory)"
-          ),
+          field("3. Hypotheses (directional/non-directional; confirmatory/exploratory)",
+            "List your hypotheses and mark each as confirmatory or exploratory.",
+            textAreaInput("hypotheses", label = NULL)),
           
-          textAreaInput(
-            "exploratory_questions",
-            "4. Exploratory Research Questions (if applicable)"
-          ),
+          field("4. Exploratory Research Questions (if applicable)",
+            "Note any additional questions explored without formal hypotheses.",
+            textAreaInput("exploratory_questions", label = NULL)),
           
-          textAreaInput(
-            "ddp_justification",
-            "5. Theoretical Justification for DDP use (why data donation is needed over other data sources)"
-          )
+          field("5. Theoretical Justification for DDP use (why data donation is needed over other data sources)",
+            "Explain why data donation is necessary rather than other data sources.",
+            textAreaInput("ddp_justification", label = NULL))
         )
       ),
       
@@ -525,50 +547,41 @@ ui <- page_fluid(
           
           card_header("Data Sources & Description"),
           
-          textAreaInput(
-            "platform_tool",
-            "1. Platform & API / Export Tool Used"
-          ),
+          field("1. Platform & API / Export Tool Used",
+            "Name the platform and the API or export tool used to obtain the data.",
+            textAreaInput("platform_tool", label = NULL)),
           
-          textAreaInput(
-            "access_method",
-            "2. Data Access Method"
-          ),
+          field("2. Data Access Method",
+            "Describe how participants exported and donated their data.",
+            textAreaInput("access_method", label = NULL)),
           
-          textAreaInput(
-            "dataset_description",
-            "3. Dataset Name / Description"
-          ),
+          field("3. Dataset Name / Description",
+            "Give the dataset a name and briefly describe its contents.",
+            textAreaInput("dataset_description", label = NULL)),
           
-          textAreaInput(
-            "download_dates",
-            "4. Date(s) of Data Access or Download"
-          ),
+          field("4. Date(s) of Data Access or Download",
+            "State when the data were accessed or downloaded.",
+            textAreaInput("download_dates", label = NULL)),
           
-          textAreaInput(
-            "availability",
-            "5. Data Availability & Access Restrictions"
-          ),
+          field("5. Data Availability & Access Restrictions",
+            "Describe who can access the data and any restrictions that apply.",
+            textAreaInput("availability", label = NULL)),
           
-          textAreaInput(
-            "prior_knowledge",
-            "6. Prior Knowledge of Data"
-          ),
+          field("6. Prior Knowledge of Data",
+            "Disclose any prior familiarity with the data before analysis.",
+            textAreaInput("prior_knowledge", label = NULL)),
           
-          textAreaInput(
-            "codebook",
-            "7. Codebook & Documentation"
-          ),
+          field("7. Codebook & Documentation",
+            "Indicate whether a codebook or documentation exists and where.",
+            textAreaInput("codebook", label = NULL)),
           
-          textAreaInput(
-            "collection_procedures",
-            "8. Data Collection Procedures"
-          ),
+          field("8. Data Collection Procedures",
+            "Outline the step-by-step procedure for collecting the donated data.",
+            textAreaInput("collection_procedures", label = NULL)),
           
-          textAreaInput(
-            "privacy_security",
-            "9. Privacy & Security Measures"
-          )
+          field("9. Privacy & Security Measures",
+            "Describe measures taken to protect participant privacy and secure the data.",
+            textAreaInput("privacy_security", label = NULL))
         )
       ),
       
@@ -585,30 +598,25 @@ ui <- page_fluid(
           
           card_header("Sampling Plan"),
           
-          textAreaInput(
-            "population",
-            "1. Target Population & Inclusion/Exclusion Criteria"
-          ),
+          field("1. Target Population & Inclusion/Exclusion Criteria",
+            "Define the target population and inclusion/exclusion criteria.",
+            textAreaInput("population", label = NULL)),
           
-          textAreaInput(
-            "recruitment",
-            "2. Recruitment Methods"
-          ),
+          field("2. Recruitment Methods",
+            "Describe how participants will be recruited.",
+            textAreaInput("recruitment", label = NULL)),
           
-          textAreaInput(
-            "sample_size",
-            "3. Sample Size Target (+ Rationale / Power Analysis)"
-          ),
+          field("3. Sample Size Target (+ Rationale / Power Analysis)",
+            "State the target sample size and justify it (e.g. power analysis).",
+            textAreaInput("sample_size", label = NULL)),
           
-          textAreaInput(
-            "stopping_rule",
-            "4. Stopping Rule"
-          ),
+          field("4. Stopping Rule",
+            "Specify the rule for when data collection stops.",
+            textAreaInput("stopping_rule", label = NULL)),
           
-          textAreaInput(
-            "representativeness",
-            "5. Representativeness & Bias Considerations"
-          )
+          field("5. Representativeness & Bias Considerations",
+            "Discuss how representative the sample is and possible sources of bias.",
+            textAreaInput("representativeness", label = NULL))
         )
       ),
       
@@ -625,30 +633,25 @@ ui <- page_fluid(
           
           card_header("Data Structure & Preprocessing"),
           
-          textAreaInput(
-            "raw_data_structure",
-            "1. Raw Data Structure (file formats, main tables, variable types)"
-          ),
+          field("1. Raw Data Structure (file formats, main tables, variable types)",
+            "Describe file formats, main tables, and variable types of the raw data.",
+            textAreaInput("raw_data_structure", label = NULL)),
           
-          textAreaInput(
-            "data_cleaning",
-            "2. Data Cleaning & Screening (duplicate removal, invalid entries, missing metadata)"
-          ),
+          field("2. Data Cleaning & Screening (duplicate removal, invalid entries, missing metadata)",
+            "Explain how duplicates, invalid entries, and missing metadata are handled.",
+            textAreaInput("data_cleaning", label = NULL)),
           
-          textAreaInput(
-            "feature_extraction",
-            "3. Feature Extraction & Variable Operationalization"
-          ),
+          field("3. Feature Extraction & Variable Operationalization",
+            "Describe how raw data are turned into analysable variables.",
+            textAreaInput("feature_extraction", label = NULL)),
           
-          textAreaInput(
-            "assumptions",
-            "4. Assumptions about Digital Trace Measures"
-          ),
+          field("4. Assumptions about Digital Trace Measures",
+            "State the assumptions you make about digital trace measures.",
+            textAreaInput("assumptions", label = NULL)),
           
-          textAreaInput(
-            "missing_data",
-            "5. Missing Data Handling Plan"
-          )
+          field("5. Missing Data Handling Plan",
+            "Describe your plan for handling missing data.",
+            textAreaInput("missing_data", label = NULL))
         )
       ),
       
@@ -665,30 +668,25 @@ ui <- page_fluid(
           
           card_header("Study Design"),
           
-          textAreaInput(
-            "study_type",
-            "1. Study Type (observational, experimental, quasi-experimental, simulation-based)"
-          ),
+          field("1. Study Type (observational, experimental, quasi-experimental, simulation-based)",
+            "Specify the study type (observational, experimental, etc.).",
+            textAreaInput("study_type", label = NULL)),
           
-          textAreaInput(
-            "blinding",
-            "2. Blinding / Masking"
-          ),
+          field("2. Blinding / Masking",
+            "State whether and how blinding or masking is applied.",
+            textAreaInput("blinding", label = NULL)),
           
-          textAreaInput(
-            "design_description",
-            "3. Design Description"
-          ),
+          field("3. Design Description",
+            "Describe the overall design of the study.",
+            textAreaInput("design_description", label = NULL)),
           
-          textAreaInput(
-            "conditions",
-            "4. Conditions / Groups"
-          ),
+          field("4. Conditions / Groups",
+            "List the conditions or groups compared, if any.",
+            textAreaInput("conditions", label = NULL)),
           
-          textAreaInput(
-            "randomization",
-            "5. Randomization Strategy"
-          )
+          field("5. Randomization Strategy",
+            "Describe how units are assigned to conditions, if applicable.",
+            textAreaInput("randomization", label = NULL))
         )
       ),
       
@@ -705,30 +703,25 @@ ui <- page_fluid(
           
           card_header("Measurements"),
           
-          textAreaInput(
-            "independent_variables",
-            "1. Independent / Predictor Variables"
-          ),
+          field("1. Independent / Predictor Variables",
+            "List the predictor or independent variables.",
+            textAreaInput("independent_variables", label = NULL)),
           
-          textAreaInput(
-            "dependent_variables",
-            "2. Dependent / Outcome Variables"
-          ),
+          field("2. Dependent / Outcome Variables",
+            "List the outcome or dependent variables.",
+            textAreaInput("dependent_variables", label = NULL)),
           
-          textAreaInput(
-            "control_variables",
-            "3. Control / Covariate Variables"
-          ),
+          field("3. Control / Covariate Variables",
+            "List control variables or covariates included.",
+            textAreaInput("control_variables", label = NULL)),
           
-          textAreaInput(
-            "derived_variables",
-            "4. Derived / Composite Variables (calculation formulas)"
-          ),
+          field("4. Derived / Composite Variables (calculation formulas)",
+            "Describe any composite variables and how they are calculated.",
+            textAreaInput("derived_variables", label = NULL)),
           
-          textAreaInput(
-            "platform_indicators",
-            "5. Platform-specific Indicators"
-          )
+          field("5. Platform-specific Indicators",
+            "Note any platform-specific metrics you use as measures.",
+            textAreaInput("platform_indicators", label = NULL))
         )
       ),
       
@@ -745,40 +738,33 @@ ui <- page_fluid(
           
           card_header("Analysis Plan"),
           
-          textAreaInput(
-            "primary_analyses",
-            "1. Primary Analyses (methods, statistical models, outcome measures)"
-          ),
+          field("1. Primary Analyses (methods, statistical models, outcome measures)",
+            "Describe the main statistical models and outcome measures.",
+            textAreaInput("primary_analyses", label = NULL)),
           
-          textAreaInput(
-            "secondary_analyses",
-            "2. Secondary Analyses"
-          ),
+          field("2. Secondary Analyses",
+            "Describe any additional planned analyses.",
+            textAreaInput("secondary_analyses", label = NULL)),
           
-          textAreaInput(
-            "inference_criteria",
-            "3. Inference Criteria (NHST, Bayesian thresholds, effect sizes)"
-          ),
+          field("3. Inference Criteria (NHST, Bayesian thresholds, effect sizes)",
+            "State thresholds for inference (p-values, Bayesian criteria, effect sizes).",
+            textAreaInput("inference_criteria", label = NULL)),
           
-          textAreaInput(
-            "modeling_parameters",
-            "4. Modeling & Simulation Parameters"
-          ),
+          field("4. Modeling & Simulation Parameters",
+            "Specify parameters for models or simulations, if used.",
+            textAreaInput("modeling_parameters", label = NULL)),
           
-          textAreaInput(
-            "performance_measures",
-            "5. Performance Measures (accuracy, bias, precision)"
-          ),
+          field("5. Performance Measures (accuracy, bias, precision)",
+            "Describe how model performance is evaluated (accuracy, bias, precision).",
+            textAreaInput("performance_measures", label = NULL)),
           
-          textAreaInput(
-            "software_packages",
-            "6. Software & Packages Used"
-          ),
+          field("6. Software & Packages Used",
+            "List the software and packages used for analysis.",
+            textAreaInput("software_packages", label = NULL)),
           
-          textAreaInput(
-            "reproducibility",
-            "7. Reproducibility Measures (code sharing plan)"
-          )
+          field("7. Reproducibility Measures (code sharing plan)",
+            "Describe how code and materials will be shared for reproducibility.",
+            textAreaInput("reproducibility", label = NULL))
         )
       ),
       
@@ -795,20 +781,17 @@ ui <- page_fluid(
           
           card_header("Specific Risks & Mitigation"),
           
-          textAreaInput(
-            "participant_risks",
-            "1. Potential Risks to Participants (privacy breaches, reidentification risk)"
-          ),
+          field("1. Potential Risks to Participants (privacy breaches, reidentification risk)",
+            "Identify potential risks to participants, such as reidentification.",
+            textAreaInput("participant_risks", label = NULL)),
           
-          textAreaInput(
-            "risk_mitigation",
-            "2. Risk Mitigation Strategies (secure storage, encryption, controlled access)"
-          ),
+          field("2. Risk Mitigation Strategies (secure storage, encryption, controlled access)",
+            "Describe strategies to reduce those risks (encryption, access control).",
+            textAreaInput("risk_mitigation", label = NULL)),
           
-          textAreaInput(
-            "ethical_justification",
-            "3. Ethical Justification for Using DDP Data"
-          )
+          field("3. Ethical Justification for Using DDP Data",
+            "Justify the ethical basis for using donated data.",
+            textAreaInput("ethical_justification", label = NULL))
         )
       ),
       
@@ -825,25 +808,21 @@ ui <- page_fluid(
           
           card_header("Open Science & Replicability"),
           
-          textAreaInput(
-            "data_sharing",
-            "1. Data Sharing Plan (raw, processed, or synthetic)"
-          ),
+          field("1. Data Sharing Plan (raw, processed, or synthetic)",
+            "State what data will be shared (raw, processed, or synthetic) and where.",
+            textAreaInput("data_sharing", label = NULL)),
           
-          textAreaInput(
-            "code_sharing",
-            "2. Code Sharing Plan"
-          ),
+          field("2. Code Sharing Plan",
+            "Describe your plan for sharing analysis code.",
+            textAreaInput("code_sharing", label = NULL)),
           
-          textAreaInput(
-            "pipeline_documentation",
-            "3. Preprocessing Pipeline Documentation"
-          ),
+          field("3. Preprocessing Pipeline Documentation",
+            "Explain how the preprocessing pipeline is documented.",
+            textAreaInput("pipeline_documentation", label = NULL)),
           
-          textAreaInput(
-            "update_policy",
-            "4. Preregistration Updates Policy (if deviations occur)"
-          )
+          field("4. Preregistration Updates Policy (if deviations occur)",
+            "Describe how deviations from this preregistration will be recorded.",
+            textAreaInput("update_policy", label = NULL))
         )
       ),
       
@@ -860,15 +839,13 @@ ui <- page_fluid(
           
           card_header("References & Supporting Material"),
           
-          textAreaInput(
-            "citations",
-            "1. Citations for prior studies, APIs, and tools"
-          ),
+          field("1. Citations for prior studies, APIs, and tools",
+            "List citations for prior studies, APIs, and tools referenced.",
+            textAreaInput("citations", label = NULL)),
           
-          textAreaInput(
-            "appendices",
-            "2. Appendices (item lists, questionnaires, data schemas)"
-          )
+          field("2. Appendices (item lists, questionnaires, data schemas)",
+            "Attach or describe supporting material (item lists, schemas, questionnaires).",
+            textAreaInput("appendices", label = NULL))
         )
       )
     ),
@@ -886,7 +863,7 @@ ui <- page_fluid(
       
       downloadButton(
         "download_pdf",
-        "Download PDF"
+        "Download Word document"
       )
     )
   )
@@ -995,7 +972,7 @@ server <- function(input, output, session) {
   output$download_pdf <- downloadHandler(
     
     filename = function() {
-      "Preregistration.pdf"
+      "Preregistration.docx"
     },
     
     content = function(file) {
@@ -1009,29 +986,29 @@ server <- function(input, output, session) {
       params$download_pdf <- NULL
       params$fill_test <- NULL
       
-      withProgress(message = "Generating PDF...", value = 0, {
+      withProgress(message = "Generating document...", value = 0, {
         
         incProgress(0.2, detail = "Preparing document")
         
         result <- try(
           quarto::quarto_render(
             input = temp_qmd,
-            output_file = "Preregistration.pdf",
+            output_file = "Preregistration.docx",
             execute_params = params
           ),
           silent = FALSE
         )
         
-        incProgress(0.8, detail = "Finalizing PDF")
+        incProgress(0.8, detail = "Finalizing document")
       })
       
-      pdf_path <- file.path(temp_dir, "Preregistration.pdf")
+      docx_path <- file.path(temp_dir, "Preregistration.docx")
       
-      if (!file.exists(pdf_path)) {
-        stop("PDF error")
+      if (!file.exists(docx_path)) {
+        stop("Document generation error")
       }
       
-      file.copy(pdf_path, file, overwrite = TRUE)
+      file.copy(docx_path, file, overwrite = TRUE)
     }
   )
 }
