@@ -594,7 +594,7 @@ ui <- page_fluid(
             "State the approving body and reference number (or why approval was not required).",
             textInput("ethics", label = NULL)),
           
-          field("6. Foreknowledge of Data or Evidence",
+          field("6. Status of Study",
             tagList(
               "Preregistration distinguishes analyses planned before observing the data from those conducted after. ",
               "For pre-existing data, foreknowledge can introduce unintended influences on the analysis and conclusions. ",
@@ -633,7 +633,7 @@ ui <- page_fluid(
           
           conditionalPanel(
             condition = "input.foreknowledge != '' && input.foreknowledge.indexOf('Data does not yet exist.') !== 0",
-            field("7. Explanation of Foreknowledge and Managing Unintended Influences (optional)",
+            field("7. Explanation of Data Foreknowledge",
               tagList(
                 "Only applicable if data for this study already exists: ",
                 "report actions taken to reduce the risk of unintended influences on the analysis plan and conclusions."
