@@ -66,6 +66,8 @@ params:
   keywords: ""
   funding: ""
   ethics: ""
+  foreknowledge: ""
+  foreknowledge_explanation: ""
 
   # STUDY OVERVIEW
   background: ""
@@ -214,6 +216,20 @@ render_text(params$funding)
 ```{r}
 #| echo: false
 render_text(params$ethics)
+```
+
+## Foreknowledge of Data or Evidence
+
+```{r}
+#| echo: false
+render_text(params$foreknowledge)
+```
+
+## Explanation of Foreknowledge and Managing Unintended Influences
+
+```{r}
+#| echo: false
+render_text(params$foreknowledge_explanation)
 ```
 
 \clearpage

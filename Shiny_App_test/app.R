@@ -409,6 +409,91 @@ ui <- page_fluid(
       .field-with-hint .shiny-input-container {
         margin-bottom: 0 !important;
       }
+      /* foreknowledge dropdown options: bold headline + grey subtext below */
+      .fk-opt {
+        padding: 4px 0;
+      }
+      .fk-head {
+        display: block;
+        font-weight: 700;
+        color: #1F2937;
+        line-height: 1.3;
+      }
+      .fk-sub {
+        display: block;
+        font-size: 0.85em;
+        font-weight: 400;
+        color: #8A94A6;
+        margin-top: 2px;
+        line-height: 1.35;
+        white-space: normal;
+      }
+      /* let the dropdown options wrap and be wide enough to read */
+      .selectize-dropdown .option {
+        white-space: normal;
+      }
+      /* highlight dropdown options in light blue (matching title boxes) on hover */
+      .selectize-dropdown .selectize-dropdown-content .option.active,
+      .selectize-dropdown .selectize-dropdown-content .option:hover,
+      .selectize-dropdown [data-selectable].active,
+      .selectize-dropdown [data-selectable]:hover {
+        background-color: #EDF4FF !important;
+        background: #EDF4FF !important;
+        color: #1F2937 !important;
+      }
+      /* non-highlighted options stay white */
+      .selectize-dropdown .selectize-dropdown-content .option {
+        background-color: #FFFFFF;
+        color: #1F2937;
+      }
+      /* make the open dropdown menu float above everything else */
+      .selectize-dropdown {
+        z-index: 3000 !important;
+        box-shadow: 0 8px 24px rgba(15,23,42,0.15);
+        border-radius: 10px;
+      }
+      /* the card must not clip a dropdown that extends past its bottom edge */
+      .card,
+      .card-body,
+      .bslib-card,
+      .tab-content,
+      .tab-pane {
+        overflow: visible !important;
+      }
+      /* cap the menu height so long lists scroll inside the menu instead of overflowing */
+      .selectize-dropdown-content {
+        max-height: 320px !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+      }
+      /* the menu box itself: no sideways scroll, sit clear of the card edge */
+      .selectize-dropdown {
+        overflow-x: hidden !important;
+        box-sizing: border-box !important;
+      }
+      /* keep the menu anchored to and as wide as the input container */
+      .selectize-control {
+        position: relative;
+      }
+      .selectize-control .selectize-dropdown {
+        width: 100% !important;
+        max-width: 100% !important;
+        left: 0 !important;
+        box-sizing: border-box !important;
+      }
+      /* option rows wrap their text instead of overflowing to the right */
+      .selectize-dropdown .option,
+      .selectize-dropdown .fk-opt,
+      .selectize-dropdown .fk-head,
+      .selectize-dropdown .fk-sub {
+        white-space: normal !important;
+        word-break: break-word;
+        overflow-wrap: anywhere;
+      }
+      /* extra room at the bottom of a card so a dropdown near the end isn't cramped */
+      .card {
+        padding-bottom: 90px;
+      }
       
     "))
   ),
@@ -507,7 +592,54 @@ ui <- page_fluid(
           
                     field("5. Ethics Approval / IRB Status",
             "State the approving body and reference number (or why approval was not required).",
-            textInput("ethics", label = NULL))
+            textInput("ethics", label = NULL)),
+          
+          field("6. Foreknowledge of Data or Evidence",
+            tagList(
+              "Preregistration distinguishes analyses planned before observing the data from those conducted after. ",
+              "For pre-existing data, foreknowledge can introduce unintended influences on the analysis and conclusions. ",
+              "Choose the situation that best describes your foreknowledge of the data and evidence for this study and analysis plan."
+            ),
+            selectizeInput(
+              "foreknowledge",
+              label = NULL,
+              choices = c(
+                "Please select..." = "",
+                "Data does not yet exist. ||| No part of the data that will be used for this analysis plan exists, and no part will be generated until after this plan is registered." = "Data does not yet exist. No part of the data that will be used for this analysis plan exists, and no part will be generated until after this plan is registered.",
+                "Data exists but the authors cannot observe it yet. ||| At least some of the data that will be used for this analysis plan exists but is inaccessible to the authors and will remain so until after this plan is registered." = "Data exists but the authors cannot observe it yet. At least some of the data that will be used for this analysis plan exists but is inaccessible to the authors and will remain so until after this plan is registered.",
+                "Data exists but the authors have not observed it yet. ||| At least some of the data that will be used for this analysis plan exists and is possible for the authors to access. However, the authors certify that they have not accessed any of that data and will not do so until after this plan is registered." = "Data exists but the authors have not observed it yet. At least some of the data that will be used for this analysis plan exists and is possible for the authors to access. However, the authors certify that they have not accessed any of that data and will not do so until after this plan is registered.",
+                "Only people other than the authors have observed the data. ||| At least some of the data that will be used for this analysis plan has been accessed by people other than the authors. However, the authors certify that they have not observed any of that data and will not do so until after this plan is registered." = "Only people other than the authors have observed the data. At least some of the data that will be used for this analysis plan has been accessed by people other than the authors. However, the authors certify that they have not observed any of that data and will not do so until after this plan is registered.",
+                "Authors' limited observation of the data could not influence their analysis decisions. ||| At least some of the data that will be used for this analysis plan has been accessed and observed by the authors. However, the authors certify that they have not sufficiently observed relevant evidence to influence their analysis decisions for this analysis plan and will not do so until after this plan is registered." = "Authors' limited observation of the data could not influence their analysis decisions. At least some of the data that will be used for this analysis plan has been accessed and observed by the authors. However, the authors certify that they have not sufficiently observed relevant evidence to influence their analysis decisions for this analysis plan and will not do so until after this plan is registered.",
+                "Authors have observed the data, but have not performed the proposed analyses. ||| At least some of the data that will be used for this analysis plan has been accessed and observed by the authors. The authors have sufficiently observed relevant evidence to influence their analysis decisions or conclusions. However, the authors have not yet performed any of the proposed analyses in this plan and will not do so until after this plan is registered." = "Authors have observed the data, but have not performed the proposed analyses. At least some of the data that will be used for this analysis plan has been accessed and observed by the authors. The authors have sufficiently observed relevant evidence to influence their analysis decisions or conclusions. However, the authors have not yet performed any of the proposed analyses in this plan and will not do so until after this plan is registered.",
+                "Authors have observed the data. ||| The authors cannot certify meeting any of the levels above given prior access and observation of the data relevant to this analysis plan." = "Authors have observed the data. The authors cannot certify meeting any of the levels above given prior access and observation of the data relevant to this analysis plan.",
+                "Analyses in this plan have been conducted already. ||| At least some of the analyses described in this analysis plan have been conducted by the authors making this a retrospective registration." = "Analyses in this plan have been conducted already. At least some of the analyses described in this analysis plan have been conducted by the authors making this a retrospective registration."
+              ),
+              options = list(
+                render = I("{
+                  option: function(item, escape) {
+                    var p = item.label.split(' ||| ');
+                    var sub = p.length > 1 ? p[1] : '';
+                    return '<div class=\"fk-opt\">' +
+                      '<span class=\"fk-head\">' + escape(p[0]) + '</span>' +
+                      '<span class=\"fk-sub\">' + escape(sub) + '</span></div>';
+                  },
+                  item: function(item, escape) {
+                    var p = item.label.split(' ||| ');
+                    return '<div><span class=\"fk-head\">' + escape(p[0]) + '</span></div>';
+                  }
+                }")
+              )
+            )),
+          
+          conditionalPanel(
+            condition = "input.foreknowledge != '' && input.foreknowledge.indexOf('Data does not yet exist.') !== 0",
+            field("7. Explanation of Foreknowledge and Managing Unintended Influences (optional)",
+              tagList(
+                "Only applicable if data for this study already exists: ",
+                "report actions taken to reduce the risk of unintended influences on the analysis plan and conclusions."
+              ),
+              textAreaInput("foreknowledge_explanation", label = NULL))
+          )
         )
       ),
       
