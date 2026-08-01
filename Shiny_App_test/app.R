@@ -19,8 +19,11 @@ library(lubridate)
 field <- function(title, hint, input_tag) {
   div(
     class = "field-with-hint",
-    tags$label(class = "field-title", title),
-    tags$p(class = "field-hint", hint),
+    div(
+      class = "field-box",
+      tags$span(class = "field-title", title),
+      tags$span(class = "field-hint", hint)
+    ),
     input_tag
   )
 }
@@ -61,12 +64,37 @@ ui <- page_fluid(
         );
         
         border-radius: 30px;
-        padding: 70px;
+        padding: 44px 48px;
         color: white;
         margin-bottom: 38px;
         position: relative;
         overflow: hidden;
         box-shadow: 0 20px 60px rgba(43,108,176,0.18);
+        cursor: pointer;
+      }
+      /* Home vs. form toggle: .home-mode on the root shows the landing view
+         and hides the tabbed form; default shows the form and hides the view. */
+      .home-view { display: none; }
+      .home-mode .home-view { display: block; }
+      .home-mode .form-view { display: none; }
+      .home-start-row {
+        margin-top: 6px;
+        display: flex;
+        justify-content: flex-start;
+      }
+      .home-start-btn {
+        border: none;
+        background: linear-gradient(135deg, #2B6CB0 0%, #4C8ED9 100%);
+        color: #FFFFFF;
+        font-size: 16px;
+        font-weight: 700;
+        padding: 12px 24px;
+        border-radius: 14px;
+        cursor: pointer;
+        box-shadow: 0 6px 18px rgba(43,108,176,0.25);
+      }
+      .home-start-btn:hover {
+        background: linear-gradient(135deg, #24578F 0%, #3E7FC7 100%);
       }
       
       .hero-section::before {
@@ -92,18 +120,18 @@ ui <- page_fluid(
       }
       
       .hero-title {
-        font-size: 52px;
+        font-size: 38px;
         font-weight: 800;
-        line-height: 1.1;
-        margin-bottom: 22px;
+        line-height: 1.15;
+        margin-bottom: 14px;
         letter-spacing: -1px;
         position: relative;
         z-index: 2;
       }
       
       .hero-text {
-        font-size: 18px;
-        line-height: 1.9;
+        font-size: 16px;
+        line-height: 1.6;
         max-width: 1100px;
         opacity: 0.95;
         position: relative;
@@ -212,11 +240,147 @@ ui <- page_fluid(
       .card-header {
         background: transparent !important;
         border: none !important;
-        padding: 0 0 28px 0;
-        margin-bottom: 28px;
+        padding: 0 0 14px 0;
+        margin-bottom: 14px;
         font-size: 30px;
         font-weight: 750;
         color: #111827;
+      }
+      
+      /* HOME landing tab */
+      .home-text {
+        font-size: 16px;
+        line-height: 1.7;
+        color: #374151;
+        margin-bottom: 18px;
+      }
+      .home-subhead {
+        font-size: 18px;
+        font-weight: 700;
+        color: #1E3A5F;
+        margin: 8px 0 12px 0;
+      }
+      /* Collapsible existing-preregistrations section */
+      .prereg-details {
+        margin: 4px 0 4px 0;
+        border: 1px solid #E5EAF1;
+        border-radius: 12px;
+        background: #FFFFFF;
+      }
+      .prereg-summary {
+        font-size: 18px;
+        font-weight: 700;
+        color: #1E3A5F;
+        padding: 12px 16px;
+        cursor: pointer;
+        list-style: none;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        user-select: none;
+      }
+      .prereg-summary::-webkit-details-marker { display: none; }
+      .prereg-summary::before {
+        content: '';
+        display: inline-block;
+        width: 0;
+        height: 0;
+        border-top: 5px solid transparent;
+        border-bottom: 5px solid transparent;
+        border-left: 7px solid #2B6CB0;
+        transition: transform 0.15s ease;
+      }
+      .prereg-details[open] > .prereg-summary::before {
+        transform: rotate(90deg);       /* points down when open */
+      }
+      .prereg-summary:hover { color: #2B6CB0; }
+      .prereg-details[open] > .prereg-summary {
+        border-bottom: 1px solid #EEF2F7;
+      }
+      .prereg-details > .home-text,
+      .prereg-details > .prereg {
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+      .prereg-details > .home-text { margin-top: 12px; }
+      .prereg-details > .prereg { padding-bottom: 14px; }
+      /* nested per-study-type sub-sections */
+      .prereg-subdetails {
+        margin: 0 0 12px 0;
+        border: 1px solid #EEF2F7;
+        border-radius: 10px;
+        background: #FBFDFF;
+      }
+      .prereg-subdetails:last-child { margin-bottom: 4px; }
+      .prereg-subsummary {
+        font-size: 15px;
+        font-weight: 650;
+        color: #2B4A6F;
+        padding: 9px 14px;
+        cursor: pointer;
+        list-style: none;
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        user-select: none;
+      }
+      .prereg-subsummary::-webkit-details-marker { display: none; }
+      .prereg-subsummary::before {
+        content: '';
+        display: inline-block;
+        width: 0;
+        height: 0;
+        border-top: 4px solid transparent;
+        border-bottom: 4px solid transparent;
+        border-left: 6px solid #6B7688;
+        transition: transform 0.15s ease;
+      }
+      .prereg-subdetails[open] > .prereg-subsummary::before {
+        transform: rotate(90deg);
+      }
+      .prereg-subsummary:hover { color: #2B6CB0; }
+      .prereg-subdetails > .prereg {
+        padding: 0 14px 12px 14px;
+      }
+      /* Preregistration list: compact two-line entries */
+      .prereg {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 10px;
+        margin: 0 0 4px 0;
+      }
+      .prereg-item {
+        padding: 10px 14px;
+        border: 1px solid #E5EAF1;
+        border-radius: 12px;
+        background: #FBFDFF;
+      }
+      .prereg-item .prereg-title {
+        font-size: 14px;
+        line-height: 1.4;
+        color: #1E3A5F;
+      }
+      .prereg-item .prereg-title .prereg-year {
+        font-weight: 700;
+      }
+      .prereg-item .prereg-title a {
+        color: #2B6CB0;
+        text-decoration: none;
+        font-weight: 650;
+      }
+      .prereg-item .prereg-title a:hover {
+        text-decoration: underline;
+      }
+      .prereg-item .prereg-desc {
+        font-size: 12.5px;
+        line-height: 1.45;
+        color: #6B7688;
+        margin-top: 3px;
+      }
+      .home-divider {
+        border: none;
+        border-top: 1px solid #E5EAF1;
+        margin: 18px 0 10px 0;
       }
       
       /* FORM */
@@ -271,6 +435,74 @@ ui <- page_fluid(
       textarea.form-control {
         min-height: 180px !important;
         resize: vertical;
+      }
+      /* the optional foreknowledge explanation is usually short */
+      #foreknowledge_explanation {
+        min-height: 80px !important;
+      }
+      /* the Other study-type description is usually short */
+      #study_type_other {
+        min-height: 80px !important;
+      }
+      /* General Study Design text boxes: about 3/4 of the default height */
+      #integration,
+      #integration_other,
+      #experimental_conditions,
+      #blinding_experiment,
+      #randomization_general,
+      #researcher_workflow,
+      #user_workflow,
+      #informed_consent,
+      /* Sampling Plan text boxes */
+      #population,
+      #sample_size,
+      #platform_population,
+      #platform_sample_size,
+      #observation_period,
+      #representation_errors,
+      /* Measurements: Data Donation text boxes (excludes Collected Variables) */
+      #raw_data_donation,
+      #new_variables,
+      #quality_control,
+      #measurement_error_reflections,
+      #other_information,
+      #qualitative_variables,
+      #additional_other_information,
+      /* References tab text boxes */
+      #references {
+        min-height: 135px !important;
+      }
+      /* Collected Variables sub-sections: 2/3 of the previous height */
+      .var-sub textarea.form-control {
+        min-height: 60px !important;
+      }
+      /* RQ text boxes and per-RQ analysis plans (direct children of a block) */
+      .var-block > .shiny-input-container textarea.form-control {
+        min-height: 110px !important;
+      }
+      /* Analysis Plan: Data Cleaning and Inference Criteria at half height */
+      #data_cleaning,
+      #inference_criteria {
+        min-height: 68px !important;
+      }
+      /* Collected Variables name field: 2/3 of the default input height */
+      .var-block input.form-control {
+        min-height: 39px !important;
+        height: 39px !important;
+      }
+      
+      /* file upload: make the file-name box the same height as the browse button */
+      .field-with-hint .shiny-input-container .input-group .form-control {
+        height: 44px !important;
+        min-height: 44px !important;
+        display: flex;
+        align-items: center;
+      }
+      .field-with-hint .shiny-input-container .input-group .btn-file,
+      .field-with-hint .shiny-input-container .input-group .input-group-btn .btn {
+        height: 44px !important;
+        display: inline-flex;
+        align-items: center;
       }
       
       /* BUTTONS */
@@ -355,7 +587,7 @@ ui <- page_fluid(
         }
         
         .hero-title {
-          font-size: 36px;
+          font-size: 30px;
         }
         
         .card {
@@ -368,31 +600,34 @@ ui <- page_fluid(
       .field-with-hint {
         margin-bottom: 16px;
       }
-      /* the title styled as the blue rounded box */
-      .field-with-hint .field-title {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
+      /* the blue rounded box now wraps BOTH the title and the hint */
+      .field-with-hint .field-box {
+        display: block;
         background: #EDF4FF;
         color: #1E3A5F;
         border-radius: 14px;
         padding: 12px 18px;
-        font-size: 14px;
-        font-weight: 700;
-        line-height: 1.5;
         width: 100%;
         border: 1px solid #D7E7FF;
         margin-bottom: 8px;
       }
+      /* bold title line inside the box */
+      .field-with-hint .field-title {
+        display: block;
+        font-size: 14px;
+        font-weight: 700;
+        line-height: 1.5;
+      }
+      /* grey hint line, below the title, inside the same box */
       .field-with-hint .field-hint {
         display: block;
         font-size: 0.82em;
         font-weight: 400;
-        color: #8A94A6;
-        margin: 0 0 8px 0;
+        color: #5A6B82;
+        margin: 2px 0 0 0;
         line-height: 1.35;
       }
-      /* links inside a hint match the blue of the title box */
+      /* links inside a hint match the box text */
       .field-with-hint .field-hint a,
       .field-with-hint .field-hint a:hover,
       .field-with-hint .field-hint a:focus {
@@ -408,6 +643,75 @@ ui <- page_fluid(
       .field-with-hint .form-group,
       .field-with-hint .shiny-input-container {
         margin-bottom: 0 !important;
+      }
+      /* ---- Collected Variables: repeatable variable blocks ---- */
+      .var-block {
+        border: 1px solid #DCE7F5;
+        border-radius: 18px;
+        background: #FBFDFF;
+        padding: 22px 22px 8px 22px;
+        margin-bottom: 18px;
+        position: relative;
+      }
+      .var-block-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 14px;
+      }
+      .var-block-title {
+        font-size: 16px;
+        font-weight: 750;
+        color: #1E3A5F;
+      }
+      .var-remove-btn.btn {
+        border: none;
+        background: #FCE8E8;
+        color: #B02B2B;
+        border-radius: 12px;
+        padding: 6px 14px;
+        font-size: 13px;
+        font-weight: 650;
+      }
+      .var-remove-btn.btn:hover {
+        background: #F7D4D4;
+        color: #8F1F1F;
+      }
+      /* sub-section (preprocessing / transformation) inside a variable block */
+      .var-sub {
+        border-left: 3px solid #CBE0FF;
+        padding-left: 14px;
+        margin: 18px 0 14px 6px;
+      }
+      .var-sub-label {
+        display: block;
+        font-size: 13px;
+        font-weight: 700;
+        color: #2B6CB0;
+        margin-bottom: 6px;
+      }
+      .var-sub-hint {
+        display: block;
+        font-size: 0.8em;
+        font-weight: 400;
+        color: #5A6B82;
+        margin-bottom: 8px;
+        line-height: 1.35;
+      }
+      .add-var-btn.btn {
+        border: 1px dashed #A9C7EF;
+        background: #F2F8FF;
+        color: #2B6CB0;
+        border-radius: 14px;
+        padding: 12px 20px;
+        font-weight: 650;
+        width: 100%;
+      }
+      .add-var-btn.btn:hover {
+        background: #E6F1FF;
+        color: #1E3A5F;
+        border-color: #2B6CB0;
       }
       /* foreknowledge dropdown options: bold headline + grey subtext below */
       .fk-opt {
@@ -503,14 +807,15 @@ ui <- page_fluid(
   # ======================================================================================
   
   div(
-    class = "main-container",
+    class = "main-container home-mode", id = "app_root",
     
     # ====================================================================================
-    # HERO
+    # HERO (clickable — returns to the Home landing view)
     # ====================================================================================
     
     div(
-      class = "hero-section",
+      class = "hero-section", id = "hero", onclick = "showHome()",
+      title = "Back to overview",
       
       div(
         class = "hero-title",
@@ -520,15 +825,143 @@ ui <- page_fluid(
       div(
         class = "hero-text",
         
-        "This platform supports researchers in planning data donation studies by systematically working through the components essential for high-quality preregistrations. It provides a structured environment to make key methodological and ethical decisions explicit and ensure the completeness of study plans prior to data collection."
+        "This template supports researchers in planning and preregistering data donation studies."
       )
     ),
     
     # ====================================================================================
-    # NAVIGATION TABS
+    # HOME / LANDING VIEW (shown first; hidden once the form is opened)
     # ====================================================================================
     
-    navset_tab(
+    div(
+      class = "home-view",
+      
+      card(
+        
+        card_header("Overview"),
+        
+        # Intro / welcome block.
+        p(class = "home-text",
+          "This app guides researchers through the important decisions involved in planning and preregistering data donation studies. Its goal is to help you think through and document key methodological choices before data collection. At the same time, we are aware that such studies often involve many decisions that cannot be foreseen at the preregistration stage \u2014 for example, attrition rates that make power calculations infeasible, or platforms changing how they provide data access. The aim is therefore to support researchers, not to restrict them when they simply cannot anticipate every decision in advance."),
+        
+        # "Existing preregistrations" heading, followed by three collapsible
+        # per-study-type sub-sections (native details/summary, no JS).
+        div(
+          class = "prereg-section",
+          div(class = "home-subhead", "Existing preregistrations"),
+          p(class = "home-text",
+            "Below we list existing data donation preregistrations we are aware of, grouped by study type, as a resource and source of inspiration for your own registration. This list will be updated continuously."),
+          local({
+            # Helper: build a compact grid of prereg cards from a list of
+            # (authors/year, title, url, description) tuples.
+            prereg_grid <- function(entries) {
+              div(
+                class = "prereg",
+                lapply(entries, function(p) {
+                  div(
+                    class = "prereg-item",
+                    div(class = "prereg-title",
+                      tags$span(class = "prereg-year", paste0(p[[1]], ": ")),
+                      tags$a(href = p[[3]], target = "_blank", rel = "noopener", p[[2]])
+                    ),
+                    div(class = "prereg-desc", p[[4]])
+                  )
+                })
+              )
+            }
+            # Helper: a nested collapsible sub-section for one study type.
+            prereg_group <- function(label, entries) {
+              tags$details(
+                class = "prereg-subdetails",
+                tags$summary(class = "prereg-subsummary", label),
+                prereg_grid(entries)
+              )
+            }
+
+            survey <- list(
+              list("Pouwels et al. (2026)", "Digital Reflections of Social Experiences: A Snapchat Data Donation Study",
+                   "https://osf.io/nxvcu/overview",
+                   "Data donation from Snapchat plus survey / mobile experience sampling to understand adolescents' online social interactions."),
+              list("Wirz et al. (2026)", "TikTok and Boredom",
+                   "https://osf.io/w2exr/overview",
+                   "Data donation of TikTok data to understand the relationship between platform use and boredom."),
+              list("Quin et al. (2024)", "Mapping the Collective Wisdom of Online Rare Disease Communities",
+                   "https://osf.io/mn9px/overview",
+                   "Data donation of Facebook data plus survey on how caregivers of those affected by rare diseases use social media for information exchange and community support."),
+              list("Quin et al. (2024)", "Social Perceptions Going Online: Social Media Food Content and Food Norms",
+                   "https://osf.io/pnh2j/overview?view_only=c7802a2b0fa34deebf480dced1acf80e",
+                   "Data donation of YouTube data plus survey on how platform food content affects perceived food norms."),
+              list("Wald et al. (2024)", "The Google Family Home",
+                   "https://osf.io/b5jwz/overview",
+                   "Data donation of Google smart-speaker history plus survey on how families use these tools, including reported vs. observed use."),
+              list("Quin et al. (2023)", "Mapping the Digital Food Environment",
+                   "https://osf.io/fn39s/overview",
+                   "Data donation of YouTube data plus survey on how platform behavior relates to food."),
+              list("Flanagan & Brewer (2019)", "Cancer Loyalty Card Study (CLOCS)",
+                   "https://www.isrctn.com/ISRCTN14897082",
+                   "Data donation of high-street retailer loyalty-card data to predict changes in purchase behavior of ovarian cancer patients prior to diagnosis.")
+            )
+            experiment <- list(
+              list("Stevkovics & Kmetty (2026)", "TikTok Data Donation Experiment",
+                   "https://osf.io/7p8nu/overview",
+                   "Data donation of TikTok data plus experiment on how AI-assisted support affects participation and burden."),
+              list("Rodewald et al. (2026)", "Frame and Motivate",
+                   "https://osf.io/vh9s3/overview?view_only=e99ac0c6f81c4f73b97ba741b57a275f",
+                   "Data donation of Instagram, LinkedIn, and YouTube data plus experiment on how study framing and appeals affect participation."),
+              list("Szafran et al. (2026)", "Instagram Abstinence and Body Image",
+                   "https://osf.io/67hqf/overview",
+                   "Data donation of Instagram data plus experiment on how abstaining from the platform affects body image perceptions."),
+              list("Manzke & Hartl (2025)", "One Owl, Two Requests",
+                   "https://osf.io/wp54d/overview",
+                   "Data donation of Duolingo learning-analytics data plus experiment on how different request methods (providing data vs. usernames) affect participation."),
+              list("Schmidbauer et al. (2025)", "Persuasive Messages for Data Donation",
+                   "https://osf.io/abpnw/overview?view_only=d38f43e4cbd3403bb9c7144ce49b45e0",
+                   "Vignette experiment varying the messages accompanying data donation requests to understand their effect on participation."),
+              list("Hase & Haim (2024)", "Can We Get Rid of Bias? Mitigating Systematic Error through Survey Design",
+                   "https://osf.io/vfazc/overview",
+                   "Data donation of Instagram, Twitter, and YouTube data plus experiment on how support during donation, personalized incentives, and framing affect participation."),
+              list("Silber et al. (2022)", "Willingness to Share Digital Trace Data",
+                   "https://osf.io/dz8k6/overview",
+                   "Vignette experiment varying features of data donation requests (e.g., data type, sharing method) to understand their effect on participation.")
+            )
+            interviews <- list(
+              list("Marschlich (2023)", "User Engagement with Organizational Posts",
+                   "https://osf.io/d5hsm/overview",
+                   "Data donation of Twitter, Instagram, and Facebook data plus qualitative interviews on engagement with organizational posts.")
+            )
+
+            tagList(
+              prereg_group("Data donation + survey", survey),
+              prereg_group("Data donation + experiment", experiment),
+              prereg_group("Data donation + qualitative interviews", interviews)
+            )
+          })
+        ),
+        
+        tags$hr(class = "home-divider"),
+        
+        div(
+          class = "home-start-row",
+          tags$button(class = "home-start-btn", onclick = "showForm()",
+                      "Start preregistration \u2192")
+        )
+      )
+    ),
+    
+    # Toggle between the Home landing view and the tabbed form.
+    tags$script(HTML(
+      "function showForm(){var r=document.getElementById('app_root');if(r){r.classList.remove('home-mode');window.scrollTo(0,0);}}
+       function showHome(){var r=document.getElementById('app_root');if(r){r.classList.add('home-mode');window.scrollTo(0,0);}}"
+    )),
+    
+    # ====================================================================================
+    # NAVIGATION TABS (the form)
+    # ====================================================================================
+    
+    div(
+      class = "form-view",
+      
+      navset_tab(
       
       # ==================================================================================
       # METADATA
@@ -553,7 +986,7 @@ ui <- page_fluid(
           
           field("3. Date of Preregistration",
             "Add the date this preregistration was created (auto-generated to be the current date).",
-            dateInput("date", label = NULL, value = NULL)),
+            dateInput("date", label = NULL, value = Sys.Date())),
           
           field("4. License",
                 tagList(
@@ -648,73 +1081,82 @@ ui <- page_fluid(
       # ==================================================================================
       
       nav_panel(
-        "Study Overview",
+        "Research Questions & Hypotheses",
         
         br(),
         
         card(
           
-          card_header("Study Overview"),
+          card_header("Research Questions & Hypotheses"),
           
           field("1. Background & Rationale",
-            "If needed, add information on what the study aims to test and the general study design.",
+            "Add a brief overview on the main goals of the study",
             textAreaInput("background", label = NULL)),
           
-          field("2. Research Questions or Hypotheses",
-            "What research questions or hypotheses are you planning to evaluate? List them separately.",
-            textAreaInput("objectives", label = NULL)),
+          div(
+            class = "field-with-hint",
+            div(
+              class = "field-box",
+              tags$span(class = "field-title", "2. Research Questions or Hypotheses"),
+              tags$span(class = "field-hint",
+                "What research questions or hypotheses are you planning to evaluate? Add each one separately. You will be able to define an analysis plan for each of them in the Analysis Plan tab.")
+            ),
+            uiOutput("rqs_ui"),
+            actionButton("add_rq", "+ Add new research question / hypothesis", class = "add-var-btn")
+          ),
           
         )
       ),
       
       # ==================================================================================
-      # DATA SOURCES & DESCRIPTION
+      # GENERAL STUDY DESIGN
       # ==================================================================================
       
       nav_panel(
-        "Data Sources & Description",
+        "General Study Design",
         
         br(),
         
         card(
           
-          card_header("Data Sources & Description"),
+          card_header("General Study Design"),
           
-          field("1. Platform & API / Export Tool Used",
-            "Name the platform and the API or export tool used to obtain the data.",
-            textAreaInput("platform_tool", label = NULL)),
+          field("1. Study Type",
+            "What type of data donation study are you planning to run? This includes the data donation as well as its potential integration in other frameworks, like surveys, experiments, or interviews.",
+            selectizeInput(
+              "study_type_general",
+              label = NULL,
+              choices = c(
+                "Please select..." = "",
+                "Data Donation ||| A standalone data donation study in which participants share exported platform data." = "Data Donation",
+                "Data Donation & Survey ||| Data donation combined with a survey to collect self-reported measures alongside the donated data." = "Data Donation & Survey",
+                "Data Donation & Experiment ||| Data donation combined with a (survey) experiment." = "Data Donation & Experiment",
+                "Data Donation & Qualitative Interviews ||| Data donation combined with qualitative interviews with donors." = "Data Donation & Qualitative Interviews",
+                "Other ||| A different design or combination of methods; describe it in the following sections." = "Other"
+              ),
+              options = list(
+                render = I("{
+                  option: function(item, escape) {
+                    var p = item.label.split(' ||| ');
+                    var sub = p.length > 1 ? p[1] : '';
+                    return '<div class=\"fk-opt\">' +
+                      '<span class=\"fk-head\">' + escape(p[0]) + '</span>' +
+                      '<span class=\"fk-sub\">' + escape(sub) + '</span></div>';
+                  },
+                  item: function(item, escape) {
+                    var p = item.label.split(' ||| ');
+                    return '<div><span class=\"fk-head\">' + escape(p[0]) + '</span></div>';
+                  }
+                }")
+              )
+            )),
           
-          field("2. Data Access Method",
-            "Describe how participants exported and donated their data.",
-            textAreaInput("access_method", label = NULL)),
+          # Everything after Study Type is rendered reactively so the field
+          # numbers stay sequential across study types (Description appears only
+          # for "Other"; Experimental Conditions and Blinding only for the
+          # experiment path). See server: output$randomization_field.
+          uiOutput("randomization_field"),
           
-          field("3. Dataset Name / Description",
-            "Give the dataset a name and briefly describe its contents.",
-            textAreaInput("dataset_description", label = NULL)),
-          
-          field("4. Date(s) of Data Access or Download",
-            "State when the data were accessed or downloaded.",
-            textAreaInput("download_dates", label = NULL)),
-          
-          field("5. Data Availability & Access Restrictions",
-            "Describe who can access the data and any restrictions that apply.",
-            textAreaInput("availability", label = NULL)),
-          
-          field("6. Prior Knowledge of Data",
-            "Disclose any prior familiarity with the data before analysis.",
-            textAreaInput("prior_knowledge", label = NULL)),
-          
-          field("7. Codebook & Documentation",
-            "Indicate whether a codebook or documentation exists and where.",
-            textAreaInput("codebook", label = NULL)),
-          
-          field("8. Data Collection Procedures",
-            "Outline the step-by-step procedure for collecting the donated data.",
-            textAreaInput("collection_procedures", label = NULL)),
-          
-          field("9. Privacy & Security Measures",
-            "Describe measures taken to protect participant privacy and secure the data.",
-            textAreaInput("privacy_security", label = NULL))
         )
       ),
       
@@ -731,130 +1173,159 @@ ui <- page_fluid(
           
           card_header("Sampling Plan"),
           
-          field("1. Target Population & Inclusion/Exclusion Criteria",
-            "Define the target population and inclusion/exclusion criteria.",
+          field("1. Participants - Target Population & Sample",
+            "Describe the population you aim to study and the sample you may draw. This includes information on how you will recruit participants, potential sampling strategies (including quota or screen-out criteria for sociodemographics or platforms for donation), or incentives.",
             textAreaInput("population", label = NULL)),
           
-          field("2. Recruitment Methods",
-            "Describe how participants will be recruited.",
-            textAreaInput("recruitment", label = NULL)),
-          
-          field("3. Sample Size Target (+ Rationale / Power Analysis)",
-            "State the target sample size and justify it (e.g. power analysis).",
+          field("2. Participants - Sample Size",
+            "Describe how many participants you aim to reach and the rationale for this. Importantly, explain targeted sample sizes across different stages of the study (e.g., participation in the survey vs. the actual data donation) and when you will stop recruitment. Include descriptions of power analyses, if possible and adequate.",
             textAreaInput("sample_size", label = NULL)),
           
-          field("4. Stopping Rule",
-            "Specify the rule for when data collection stops.",
-            textAreaInput("stopping_rule", label = NULL)),
+          field("3. Platforms/Devices - Target Population & Sample",
+            "Describe what type of data participants are asked to donate (e.g., specific platforms, specific chat logs, specific device logs). This includes information on what type of data participants are asked to donate, whether they can choose between different options (e.g., different platforms), and whether participants can donate data from several platforms/devices. Note that specifications on variables extracted from the data donations are described elsewhere.",
+            textAreaInput("platform_population", label = NULL)),
           
-          field("5. Representativeness & Bias Considerations",
-            "Discuss how representative the sample is and possible sources of bias.",
-            textAreaInput("representativeness", label = NULL))
+          field("4. Platforms/Devices - Sample Size",
+            "Describe how many data donation submissions (e.g., data donation packages, other data points) you aim to reach in total as well as per participant and the rationale for this.",
+            textAreaInput("platform_sample_size", label = NULL)),
+          
+          field("5. Observation Period",
+            "Explain when you plan to start the data collection and how long you plan to be in the field.",
+            textAreaInput("observation_period", label = NULL)),
+          
+          field("6. Reflections on Errors in Representation (Platforms, Participants, Drop-Out)",
+            tagList(
+              "Here, we invite you to reflect on errors in representations your study may carry (for further information, see ",
+              HTML(paste0(
+                as.character(tags$a(
+                  href = "https://doi.org/10.5117/CCR2022.2.002.BOES",
+                  target = "_blank",
+                  rel = "noopener",
+                  "this article"
+                )),
+                ")."
+              )),
+              " Do you expect coverage bias in who is prevalent on specific platforms/uses specific devices? Do you expect non-participation bias in who is willing to or actually sharing their data or not? Reflect on potential challenges you may expect and mitigation strategies, if possible."
+            ),
+            textAreaInput("representation_errors", label = NULL))
         )
       ),
       
       # ==================================================================================
-      # DATA STRUCTURE & PREPROCESSING
+      # MEASUREMENTS: DATA DONATION
       # ==================================================================================
       
       nav_panel(
-        "Data Structure & Preprocessing",
+        "Measures: Data Donation",
         
         br(),
         
         card(
           
-          card_header("Data Structure & Preprocessing"),
+          card_header("Measures: Data Donation"),
           
-          field("1. Raw Data Structure (file formats, main tables, variable types)",
-            "Describe file formats, main tables, and variable types of the raw data.",
-            textAreaInput("raw_data_structure", label = NULL)),
+          field("1. Raw Data Structure",
+            tagList(
+              "Describe the raw data structure of data donations before preprocessing \u2014 that is, how the data will look like immediately after being downloaded or otherwise generated by the participants. What data type will it be and what folder structure will it have? If possible, upload a PDF of the current data documentation by platforms (e.g., see LinkedIn example ",
+              HTML(paste0(
+                as.character(tags$a(
+                  href = "https://www.linkedin.com/help/linkedin/answer/a1339364/?lang=en-US",
+                  target = "_blank", "here"
+                )),
+                ")."
+              ))
+            ),
+            textAreaInput("raw_data_donation", label = NULL)),
           
-          field("2. Data Cleaning & Screening (duplicate removal, invalid entries, missing metadata)",
-            "Explain how duplicates, invalid entries, and missing metadata are handled.",
-            textAreaInput("data_cleaning", label = NULL)),
+          field("Upload additional material",
+            "Upload a single PDF of the current data documentation by platforms, if available.",
+            fileInput("data_documentation_file", label = NULL, accept = ".pdf",
+                      buttonLabel = "Browse...", placeholder = "No file selected")),
           
-          field("3. Feature Extraction & Variable Operationalization",
-            "Describe how raw data are turned into analysable variables.",
-            textAreaInput("feature_extraction", label = NULL)),
+          div(
+            class = "field-with-hint",
+            div(
+              class = "field-box",
+              tags$span(class = "field-title", "2. Collected Variables"),
+              tags$span(class = "field-hint",
+                "Add each variable you will collect, giving it a clear name. For every variable, describe how it will be preprocessed (filtering, aggregation, annotation) and how it will be transformed (e.g., re-coding, indexing). Use \"Add new variable\" to add as many as you need.")
+            ),
+            uiOutput("collected_variables_ui"),
+            actionButton("add_variable", "+ Add new variable", class = "add-var-btn")
+          ),
           
-          field("4. Assumptions about Digital Trace Measures",
-            "State the assumptions you make about digital trace measures.",
-            textAreaInput("assumptions", label = NULL)),
+          field("3. Any Other Variables Derived from the Data Donations",
+            "Describe any other variables you will derive from the data donation (e.g., if you combine several collected variables to an index you would rather describe here, etc.).",
+            textAreaInput("new_variables", label = NULL)),
           
-          field("5. Missing Data Handling Plan",
-            "Describe your plan for handling missing data.",
-            textAreaInput("missing_data", label = NULL))
+          field("4. Quality Control Procedures",
+            "Describe any quality-control procedures you may implement for the data donation (e.g., handling of missing data or empty files, duplicate data donations, large file sizes).",
+            textAreaInput("quality_control", label = NULL)),
+          
+          field("5. Reflections on Measurement Errors (Missing Data, Preprocessing, Transformation)",
+            tagList(
+              "Here, we invite you to reflect on measurement errors your study may carry (for further information, see ",
+              tags$a(href = "https://doi.org/10.5117/CCR2022.2.002.BOES", target = "_blank", rel = "noopener", "this article"),
+              " and ",
+              HTML(paste0(
+                as.character(tags$a(
+                  href = "https://doi.org/10.14763/2024.3.1793",
+                  target = "_blank", rel = "noopener", "this article"
+                )),
+                ")."
+              )),
+              " Do you expect platforms (or users) to not provide specific data points? Could errors arise from preprocessing or transformation? Reflect on potential challenges you may expect and mitigation strategies, if possible."
+            ),
+            textAreaInput("measurement_error_reflections", label = NULL)),
+          
+          field("6. Other Information",
+            "Add any other information related to the data donation that you would like to document here.",
+            textAreaInput("other_information", label = NULL)),
+          
+          field("Upload additional material",
+            "Upload a single PDF with any additional material related to the data donation, if necessary.",
+            fileInput("other_information_file", label = NULL, accept = ".pdf",
+                      buttonLabel = "Browse...", placeholder = "No file selected"))
         )
       ),
       
       # ==================================================================================
-      # STUDY DESIGN
+      # MEASUREMENTS: ADDITIONAL DATA COLLECTION
       # ==================================================================================
       
       nav_panel(
-        "Study Design",
+        "Measures: Other Data",
         
         br(),
         
         card(
           
-          card_header("Study Design"),
+          card_header("Measures: Other Data"),
           
-          field("1. Study Type (observational, experimental, quasi-experimental, simulation-based)",
-            "Specify the study type (observational, experimental, etc.).",
-            textAreaInput("study_type", label = NULL)),
+          div(
+            class = "field-with-hint",
+            div(
+              class = "field-box",
+              tags$span(class = "field-title", "1. Variables Collected from Other Quantitative Data Collection"),
+              tags$span(class = "field-hint",
+                "Add each variable you will collect using a different quantitative method (e.g., survey). You can add additional variables one by one. Simply leave blank if none are collected.")
+            ),
+            uiOutput("qvars_ui"),
+            actionButton("add_qvar", "+ Add new variable", class = "add-var-btn")
+          ),
           
-          field("2. Blinding / Masking",
-            "State whether and how blinding or masking is applied.",
-            textAreaInput("blinding", label = NULL)),
+          field("2. Variables Collected from Other Qualitative Data Collection",
+            "Add additional data or variables you will collect using a different qualitative method (e.g., interviews). Descriptions can include, for example, interview guides and approaches for extracting themes from these. Simply leave blank if this does not apply to your study.",
+            textAreaInput("qualitative_variables", label = NULL)),
           
-          field("3. Design Description",
-            "Describe the overall design of the study.",
-            textAreaInput("design_description", label = NULL)),
+          field("3. Other Information",
+            "Add any other information related to the additional data collection that you would like to document here. Examples include survey items or interview guidelines.",
+            textAreaInput("additional_other_information", label = NULL)),
           
-          field("4. Conditions / Groups",
-            "List the conditions or groups compared, if any.",
-            textAreaInput("conditions", label = NULL)),
-          
-          field("5. Randomization Strategy",
-            "Describe how units are assigned to conditions, if applicable.",
-            textAreaInput("randomization", label = NULL))
-        )
-      ),
-      
-      # ==================================================================================
-      # MEASUREMENTS
-      # ==================================================================================
-      
-      nav_panel(
-        "Measurements",
-        
-        br(),
-        
-        card(
-          
-          card_header("Measurements"),
-          
-          field("1. Independent / Predictor Variables",
-            "List the predictor or independent variables.",
-            textAreaInput("independent_variables", label = NULL)),
-          
-          field("2. Dependent / Outcome Variables",
-            "List the outcome or dependent variables.",
-            textAreaInput("dependent_variables", label = NULL)),
-          
-          field("3. Control / Covariate Variables",
-            "List control variables or covariates included.",
-            textAreaInput("control_variables", label = NULL)),
-          
-          field("4. Derived / Composite Variables (calculation formulas)",
-            "Describe any composite variables and how they are calculated.",
-            textAreaInput("derived_variables", label = NULL)),
-          
-          field("5. Platform-specific Indicators",
-            "Note any platform-specific metrics you use as measures.",
-            textAreaInput("platform_indicators", label = NULL))
+          field("Upload additional material",
+            "Upload a single PDF with any additional material related to the additional data collection, if necessary.",
+            fileInput("additional_other_information_file", label = NULL, accept = ".pdf",
+                      buttonLabel = "Browse...", placeholder = "No file selected"))
         )
       ),
       
@@ -871,114 +1342,48 @@ ui <- page_fluid(
           
           card_header("Analysis Plan"),
           
-          field("1. Primary Analyses (methods, statistical models, outcome measures)",
-            "Describe the main statistical models and outcome measures.",
-            textAreaInput("primary_analyses", label = NULL)),
+          field("1. Data Cleaning",
+            "Describe how you will clean data. This includes removing observations (e.g., participants failing data quality checks or with missing data, outliers) and data points for observations (e.g., empty data donations, duplicate data donations).",
+            textAreaInput("data_cleaning", label = NULL)),
           
-          field("2. Secondary Analyses",
-            "Describe any additional planned analyses.",
-            textAreaInput("secondary_analyses", label = NULL)),
+          div(
+            class = "field-with-hint",
+            div(
+              class = "field-box",
+              tags$span(class = "field-title", "2. Analysis"),
+              tags$span(class = "field-hint",
+                "Describe the analysis plan for each hypothesis or research question added in the Research Questions & Hypotheses tab. Make sure to define which (sub-)sample the analysis will be conducted with (e.g., all participants, only subset of participants sharing data). If applicable, define the type of model you will use (e.g., ANOVA, regression, etc.) and model specifications (e.g., dependent variables, independent variables, controls, etc.). The section can also include planned robustness tests.")
+            ),
+            uiOutput("rq_analysis_ui")
+          ),
           
-          field("3. Inference Criteria (NHST, Bayesian thresholds, effect sizes)",
-            "State thresholds for inference (p-values, Bayesian criteria, effect sizes).",
-            textAreaInput("inference_criteria", label = NULL)),
-          
-          field("4. Modeling & Simulation Parameters",
-            "Specify parameters for models or simulations, if used.",
-            textAreaInput("modeling_parameters", label = NULL)),
-          
-          field("5. Performance Measures (accuracy, bias, precision)",
-            "Describe how model performance is evaluated (accuracy, bias, precision).",
-            textAreaInput("performance_measures", label = NULL)),
-          
-          field("6. Software & Packages Used",
-            "List the software and packages used for analysis.",
-            textAreaInput("software_packages", label = NULL)),
-          
-          field("7. Reproducibility Measures (code sharing plan)",
-            "Describe how code and materials will be shared for reproducibility.",
-            textAreaInput("reproducibility", label = NULL))
+          field("3. Inference Criteria",
+            "If applicable, describe the criteria used to make inferences (e.g., p-values, Bayesian approach) and cut-off values.",
+            textAreaInput("inference_criteria", label = NULL))
         )
       ),
       
       # ==================================================================================
-      # RISKS & MITIGATION
+      # REFERENCES
       # ==================================================================================
       
       nav_panel(
-        "Specific Risks & Mitigation",
+        "References",
         
         br(),
         
         card(
           
-          card_header("Specific Risks & Mitigation"),
+          card_header("References"),
           
-          field("1. Potential Risks to Participants (privacy breaches, reidentification risk)",
-            "Identify potential risks to participants, such as reidentification.",
-            textAreaInput("participant_risks", label = NULL)),
+          field("1. References",
+            "Please copy in a list of references used in this preregistration.",
+            textAreaInput("references", label = NULL)),
           
-          field("2. Risk Mitigation Strategies (secure storage, encryption, controlled access)",
-            "Describe strategies to reduce those risks (encryption, access control).",
-            textAreaInput("risk_mitigation", label = NULL)),
-          
-          field("3. Ethical Justification for Using DDP Data",
-            "Justify the ethical basis for using donated data.",
-            textAreaInput("ethical_justification", label = NULL))
-        )
-      ),
-      
-      # ==================================================================================
-      # OPEN SCIENCE & REPLICABILITY
-      # ==================================================================================
-      
-      nav_panel(
-        "Open Science & Replicability",
-        
-        br(),
-        
-        card(
-          
-          card_header("Open Science & Replicability"),
-          
-          field("1. Data Sharing Plan (raw, processed, or synthetic)",
-            "State what data will be shared (raw, processed, or synthetic) and where.",
-            textAreaInput("data_sharing", label = NULL)),
-          
-          field("2. Code Sharing Plan",
-            "Describe your plan for sharing analysis code.",
-            textAreaInput("code_sharing", label = NULL)),
-          
-          field("3. Preprocessing Pipeline Documentation",
-            "Explain how the preprocessing pipeline is documented.",
-            textAreaInput("pipeline_documentation", label = NULL)),
-          
-          field("4. Preregistration Updates Policy (if deviations occur)",
-            "Describe how deviations from this preregistration will be recorded.",
-            textAreaInput("update_policy", label = NULL))
-        )
-      ),
-      
-      # ==================================================================================
-      # REFERENCES & SUPPORTING MATERIAL
-      # ==================================================================================
-      
-      nav_panel(
-        "References & Supporting Material",
-        
-        br(),
-        
-        card(
-          
-          card_header("References & Supporting Material"),
-          
-          field("1. Citations for prior studies, APIs, and tools",
-            "List citations for prior studies, APIs, and tools referenced.",
-            textAreaInput("citations", label = NULL)),
-          
-          field("2. Appendices (item lists, questionnaires, data schemas)",
-            "Attach or describe supporting material (item lists, schemas, questionnaires).",
-            textAreaInput("appendices", label = NULL))
+          field("2. Any Additional Information",
+            "Here, you can upload any type of additional material accompanying your preregistration.",
+            fileInput("additional_material_file", label = NULL, accept = ".pdf",
+                      buttonLabel = "Browse...", placeholder = "No file selected"))
         )
       )
     ),
@@ -988,16 +1393,11 @@ ui <- page_fluid(
     div(
       style = "display:flex; gap:12px; justify-content:right;",
       
-      actionButton(
-        "fill_test",
-        "Fill with test data",
-        class = "btn btn-secondary"
-      ),
-      
       downloadButton(
         "download_pdf",
         "Download Word document"
       )
+    )
     )
   )
 )
@@ -1007,93 +1407,342 @@ ui <- page_fluid(
 # ==================================================================================
 
 server <- function(input, output, session) {
-  
-  # Autofill 
-  fill_textareas <- function(ids, value = "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim. Donec pede justo, fringilla vel, aliquet nec, vulputate eget, arcu. In enim justo, rhoncus ut, imperdiet a, venenatis vitae, justo. Nullam dictum felis eu pede mollis pretium. Integer tincidunt. Cras dapibus. Vivamus elementum semper nisi. Aenean vulputate eleifend tellus. Aenean leo ligula, porttitor eu, consequat vitae, eleifend ac, enim. Aliquam lorem ante, dapibus in, viverra quis, feugiat a, tellus. Phasellus viverra nulla ut metus varius laoreet. Quisque rutrum. Aenean imperdiet. Etiam ultricies nisi vel augue. Curabitur ullamcorper ultricies nisi. Nam eget dui. Etiam rhoncus. Maecenas tempus, tellus eget condimentum rhoncus, sem quam semper libero, sit amet adipiscing sem neque sed ipsum. Nam quam nunc, blandit vel, luctus pulvinar, hendrerit id, lorem. Maecenas nec odio et ante tincidunt tempus. Donec vitae sapien ut libero venenatis faucibus. Nullam quis ante. Etiam sit amet orci eget eros faucibus tincidunt. Duis leo. Sed fringilla mauris sit amet nibh. Donec sodales sagittis magna. Sed consequat, leo eget bibendum sodales, augue velit cursus nunc,") {
-    lapply(ids, function(id) {
-      updateTextAreaInput(session, id, value = paste(value, "-", "TEST"))
-    })
+
+  # ---- Collected Variables: repeatable variable blocks ----
+  # Each block has a stable integer id used to build unique input ids
+  # (var_name_<id>, var_preprocess_<id>, var_transform_<id>). Ids are never
+  # reused, so removing a block and adding another can't collide with stale
+  # values. var_ids holds the ids currently displayed, in order.
+  var_ids <- reactiveVal(1L)          # start with one block
+  var_counter <- reactiveVal(1L)      # highest id issued so far
+  var_removers <- reactiveVal(integer(0))  # ids that already have a remove-observer
+
+  # Preserve a typed value across re-renders (returns "" if never set).
+  keep_var <- function(id) {
+    v <- isolate(input[[id]])
+    if (is.null(v)) "" else v
   }
-  
-  
-  observeEvent(input$fill_test, {
-    
-    fill_textareas(c(
-      # METADATA
-      "title",
-      "authors",
-      "date",
-      "license",
-      "ethics",
-      
-      # STUDY OVERVIEW
-      "background",
-      "questions_hypotheses",
-      
-      # DATA SOURCES
-      "platform_tool",
-      "access_method",
-      "dataset_description",
-      "download_dates",
-      "availability",
-      "prior_knowledge",
-      "codebook",
-      "collection_procedures",
-      "privacy_security",
-      
-      # SAMPLING
-      "population",
-      "recruitment",
-      "sample_size",
-      "stopping_rule",
-      "representativeness",
-      
-      # DATA STRUCTURE
-      "raw_data_structure",
-      "data_cleaning",
-      "feature_extraction",
-      "assumptions",
-      "missing_data",
-      
-      # STUDY DESIGN
-      "study_type",
-      "blinding",
-      "design_description",
-      "conditions",
-      "randomization",
-      
-      # MEASUREMENTS
-      "independent_variables",
-      "dependent_variables",
-      "control_variables",
-      "derived_variables",
-      "platform_indicators",
-      
-      # ANALYSIS
-      "primary_analyses",
-      "secondary_analyses",
-      "inference_criteria",
-      "modeling_parameters",
-      "performance_measures",
-      "software_packages",
-      "reproducibility",
-      
-      # RISKS
-      "participant_risks",
-      "risk_mitigation",
-      "ethical_justification",
-      
-      # OPEN SCIENCE
-      "data_sharing",
-      "code_sharing",
-      "pipeline_documentation",
-      "update_policy",
-      
-      # REFERENCES
-      "citations",
-      "appendices"
+
+  output$collected_variables_ui <- renderUI({
+    ids <- var_ids()
+    blocks <- lapply(seq_along(ids), function(k) {
+      id <- ids[[k]]
+      name_id       <- paste0("var_name_", id)
+      preprocess_id <- paste0("var_preprocess_", id)
+      transform_id  <- paste0("var_transform_", id)
+      remove_id     <- paste0("remove_var_", id)
+
+      div(
+        class = "var-block",
+        div(
+          class = "var-block-head",
+          tags$span(class = "var-block-title", paste0("Variable ", k)),
+          # Only offer removal when more than one block exists.
+          if (length(ids) > 1) {
+            actionButton(remove_id, "Remove", class = "var-remove-btn")
+          }
+        ),
+        textInput(name_id, label = "Variable name",
+                  value = keep_var(name_id),
+                  placeholder = "e.g., daily_posting_frequency"),
+        div(
+          class = "var-sub",
+          tags$span(class = "var-sub-label", "Preprocessing"),
+          tags$span(class = "var-sub-hint",
+            "How will this variable be preprocessed before researchers can access it? (e.g., local extraction, filtering of observations, aggregation, annotation by participants)"),
+          textAreaInput(preprocess_id, label = NULL, value = keep_var(preprocess_id))
+        ),
+        div(
+          class = "var-sub",
+          tags$span(class = "var-sub-label", "Transformation"),
+          tags$span(class = "var-sub-hint",
+            "How will this variable be transformed for analysis after researchers can access it? (e.g., re-coding, aggregation, index-building)"),
+          textAreaInput(transform_id, label = NULL, value = keep_var(transform_id))
+        )
+      )
+    })
+    do.call(tagList, blocks)
+  })
+
+  # Add a new block: issue the next id and append it.
+  observeEvent(input$add_variable, {
+    new_id <- var_counter() + 1L
+    var_counter(new_id)
+    var_ids(c(var_ids(), new_id))
+  })
+
+  # Register remove-observers lazily for any id that doesn't have one yet.
+  # Each observer drops its own id from var_ids when the matching button is clicked.
+  observe({
+    ids <- var_ids()
+    have <- var_removers()
+    todo <- setdiff(ids, have)
+    for (id in todo) {
+      local({
+        this_id <- id
+        observeEvent(input[[paste0("remove_var_", this_id)]], {
+          var_ids(setdiff(var_ids(), this_id))
+        }, ignoreInit = TRUE)
+      })
+    }
+    if (length(todo)) var_removers(union(have, todo))
+  })
+
+  # ---- Additional Data Collection: repeatable quantitative-variable blocks ----
+  # Same machinery as Collected Variables, with a distinct "qvar" prefix so the
+  # two sets never collide. Sub-sections are Operationalization and Transformation.
+  qvar_ids <- reactiveVal(1L)
+  qvar_counter <- reactiveVal(1L)
+  qvar_removers <- reactiveVal(integer(0))
+
+  output$qvars_ui <- renderUI({
+    ids <- qvar_ids()
+    blocks <- lapply(seq_along(ids), function(k) {
+      id <- ids[[k]]
+      name_id       <- paste0("qvar_name_", id)
+      operation_id  <- paste0("qvar_operation_", id)
+      transform_id  <- paste0("qvar_transform_", id)
+      remove_id     <- paste0("remove_qvar_", id)
+
+      div(
+        class = "var-block",
+        div(
+          class = "var-block-head",
+          tags$span(class = "var-block-title", paste0("Variable ", k)),
+          if (length(ids) > 1) {
+            actionButton(remove_id, "Remove", class = "var-remove-btn")
+          }
+        ),
+        textInput(name_id, label = "Variable name",
+                  value = keep_var(name_id),
+                  placeholder = "e.g., political_interest"),
+        div(
+          class = "var-sub",
+          tags$span(class = "var-sub-label", "Operationalization"),
+          tags$span(class = "var-sub-hint",
+            "How will this variable be operationalized? (e.g., survey items)"),
+          textAreaInput(operation_id, label = NULL, value = keep_var(operation_id))
+        ),
+        div(
+          class = "var-sub",
+          tags$span(class = "var-sub-label", "Transformation"),
+          tags$span(class = "var-sub-hint",
+            "How will this variable be transformed for analysis after researchers can access it? (e.g., re-coding, aggregation, index-building)"),
+          textAreaInput(transform_id, label = NULL, value = keep_var(transform_id))
+        )
+      )
+    })
+    do.call(tagList, blocks)
+  })
+
+  observeEvent(input$add_qvar, {
+    new_id <- qvar_counter() + 1L
+    qvar_counter(new_id)
+    qvar_ids(c(qvar_ids(), new_id))
+  })
+
+  observe({
+    ids <- qvar_ids()
+    have <- qvar_removers()
+    todo <- setdiff(ids, have)
+    for (id in todo) {
+      local({
+        this_id <- id
+        observeEvent(input[[paste0("remove_qvar_", this_id)]], {
+          qvar_ids(setdiff(qvar_ids(), this_id))
+        }, ignoreInit = TRUE)
+      })
+    }
+    if (length(todo)) qvar_removers(union(have, todo))
+  })
+
+  # ---- Research Questions / Hypotheses: repeatable blocks ----
+  # Each RQ has a stable id used for rq_text_<id> (the RQ text, in the Research
+  # Questions tab) and rqplan_<id> (its analysis plan, in the Analysis Plan tab).
+  # Both tabs read the same rq_ids(), so adding/removing an RQ keeps the two in
+  # sync automatically.
+  rq_ids <- reactiveVal(1L)
+  rq_counter <- reactiveVal(1L)
+  rq_removers <- reactiveVal(integer(0))
+
+  output$rqs_ui <- renderUI({
+    ids <- rq_ids()
+    blocks <- lapply(seq_along(ids), function(k) {
+      id <- ids[[k]]
+      text_id   <- paste0("rq_text_", id)
+      remove_id <- paste0("remove_rq_", id)
+      div(
+        class = "var-block",
+        div(
+          class = "var-block-head",
+          tags$span(class = "var-block-title", paste0("RQ / Hypothesis ", k)),
+          if (length(ids) > 1) {
+            actionButton(remove_id, "Remove", class = "var-remove-btn")
+          }
+        ),
+        textAreaInput(text_id, label = NULL, value = keep_var(text_id),
+                      placeholder = "State the research question or hypothesis.")
+      )
+    })
+    do.call(tagList, blocks)
+  })
+
+  observeEvent(input$add_rq, {
+    new_id <- rq_counter() + 1L
+    rq_counter(new_id)
+    rq_ids(c(rq_ids(), new_id))
+  })
+
+  observe({
+    ids <- rq_ids()
+    have <- rq_removers()
+    todo <- setdiff(ids, have)
+    for (id in todo) {
+      local({
+        this_id <- id
+        observeEvent(input[[paste0("remove_rq_", this_id)]], {
+          rq_ids(setdiff(rq_ids(), this_id))
+        }, ignoreInit = TRUE)
+      })
+    }
+    if (length(todo)) rq_removers(union(have, todo))
+  })
+
+  # Per-RQ analysis plan blocks in the Analysis Plan tab. One block per RQ,
+  # showing that RQ's text (live) plus an analysis-plan text area (rqplan_<id>).
+  output$rq_analysis_ui <- renderUI({
+    ids <- rq_ids()
+    blocks <- lapply(seq_along(ids), function(k) {
+      id <- ids[[k]]
+      rq_text <- input[[paste0("rq_text_", id)]]
+      rq_text <- if (is.null(rq_text) || trimws(rq_text) == "") {
+        "(no text entered yet — add it in the Research Questions & Hypotheses tab)"
+      } else {
+        rq_text
+      }
+      plan_id <- paste0("rqplan_", id)
+      div(
+        class = "var-block",
+        div(
+          class = "var-block-head",
+          tags$span(class = "var-block-title", paste0("RQ / Hypothesis ", k))
+        ),
+        div(
+          class = "var-sub",
+          tags$span(class = "var-sub-label", "Research question / hypothesis"),
+          tags$span(class = "var-sub-hint", rq_text)
+        ),
+        tags$span(class = "var-sub-label", "Analysis plan"),
+        textAreaInput(plan_id, label = NULL, value = keep_var(plan_id))
+      )
+    })
+    do.call(tagList, blocks)
+  })
+
+  # All fields after "1. Study Type" are rendered here so their numbers stay
+  # sequential across study types: "Description of Study Type" appears only for
+  # "Other"; "Experimental Conditions" and "Blinding" only for the experiment
+  # path. A running counter assigns the numbers. Typed values are preserved
+  # across renumbering.
+  output$randomization_field <- renderUI({
+    st <- input$study_type_general
+    is_other <- !is.null(st) && st == "Other"
+    is_experiment <- !is.null(st) && st == "Data Donation & Experiment"
+
+    keep <- function(id) {
+      v <- isolate(input[[id]])
+      if (is.null(v)) "" else v
+    }
+
+    # Sequential field counter (Study Type is 1, rendered statically above).
+    i <- 1L
+    nxt <- function() {
+      i <<- i + 1L
+      i
+    }
+
+    items <- list()
+
+    # Description of Study Type — only for "Other".
+    if (is_other) {
+      items <- c(items, list(
+        field(
+          paste0(nxt(), ". Description of Study Type"),
+          "Briefly describe the design or combination of methods you are planning to use.",
+          textAreaInput("study_type_other", label = NULL, value = keep("study_type_other"))
+        )
+      ))
+    }
+
+    # Researcher-Side Workflow & Tool for Data Donation — always.
+    items <- c(items, list(
+      field(
+        paste0(nxt(), ". Researcher-Side Workflow & Tool for Data Donation"),
+        tagList(
+          "Specify how the data collection will look like from the side of the research team. How and when is the data donation integrated in other methods, if at all? Which tool(s) will you use to collect the data (for data donation and/or other methods)? Note that specifications on sampling (e.g., platforms) and operationalization (e.g., data extraction) are noted elsewhere. See ",
+          tags$a(href = "https://doi.org/10.1007/s11135-024-01983-x", target = "_blank", "this primer"),
+          " for more information."
+        ),
+        textAreaInput("researcher_workflow", label = NULL, value = keep("researcher_workflow"))
+      )
     ))
-    
+
+    # User-Side Workflow & Data Collection Procedure — always, with upload.
+    items <- c(items, list(
+      field(
+        paste0(nxt(), ". User-Side Workflow & Data Collection Procedure"),
+        "Specify how the data collection will look like from the side of the participants. How will they be able to request or otherwise collect their data for data donation? How will they share their data (for data donation and/or other methods) with researchers? For several methods (e.g., survey and data donation) which data will they share when? If possible, upload an example of researcher instructions on how participants can get their data or provide a link to where those are stored.",
+        textAreaInput("user_workflow", label = NULL, value = keep("user_workflow"))
+      ),
+      field(
+        "Upload additional material",
+        "Upload a single PDF containing example participant instructions, if necessary.",
+        fileInput("user_instructions_file", label = NULL, accept = ".pdf",
+                  buttonLabel = "Browse...", placeholder = "No file selected")
+      )
+    ))
+
+    # Experimental Conditions (with upload) and Blinding — only for the experiment path.
+    if (is_experiment) {
+      items <- c(items, list(
+        field(
+          paste0(nxt(), ". Experimental Conditions"),
+          "Describe experimental conditions: what are experimental factors and levels for each factor? If possible, upload an example of respective stimuli or provide a link to where those are stored.",
+          textAreaInput("experimental_conditions", label = NULL, value = keep("experimental_conditions"))
+        ),
+        field(
+          "Upload additional material",
+          "Upload a single PDF containing example stimuli, if necessary",
+          fileInput("stimuli_file", label = NULL, accept = ".pdf",
+                    buttonLabel = "Browse...", placeholder = "No file selected")
+        ),
+        field(
+          paste0(nxt(), ". Blinding"),
+          "Explain who is aware of the experimental conditions. This can include participants or researchers.",
+          textAreaInput("blinding_experiment", label = NULL, value = keep("blinding_experiment"))
+        )
+      ))
+    }
+
+    # Randomization — always.
+    items <- c(items, list(
+      field(
+        paste0(nxt(), ". Randomization"),
+        "If you include any form of randomization (e.g., into experimental conditions, for types of data donation participants are asked about), describe how you will randomize. Add \"NA\" if no randomization is used.",
+        textAreaInput("randomization_general", label = NULL, value = keep("randomization_general"))
+      )
+    ))
+
+    # Informed Consent — always.
+    items <- c(items, list(
+      field(
+        paste0(nxt(), ". Informed Consent"),
+        "Explain how participants are informed about what this study entails and asked about their informed consent. This can include different steps (e.g., at the beginning of the study, when inquiring users about their willingness to donate data, before actual data transmission).",
+        textAreaInput("informed_consent", label = NULL, value = keep("informed_consent"))
+      )
+    ))
+
+    do.call(tagList, items)
   })
   
   output$download_pdf <- downloadHandler(
@@ -1111,7 +1760,133 @@ server <- function(input, output, session) {
       
       params <- reactiveValuesToList(input)
       params$download_pdf <- NULL
-      params$fill_test <- NULL
+      
+      # dateInput returns a Date object; Quarto params expect a plain string.
+      if (!is.null(params$date)) {
+        params$date <- as.character(params$date)
+      } else {
+        params$date <- ""
+      }
+      
+      # fileInput returns a data frame (name/size/type/datapath), which Quarto
+      # params can't accept. Replace it with just the uploaded file's name (a string),
+      # or "" if nothing was uploaded.
+      if (is.data.frame(params$stimuli_file)) {
+        params$stimuli_file <- params$stimuli_file$name
+      } else {
+        params$stimuli_file <- ""
+      }
+      if (is.data.frame(params$user_instructions_file)) {
+        params$user_instructions_file <- params$user_instructions_file$name
+      } else {
+        params$user_instructions_file <- ""
+      }
+      if (is.data.frame(params$data_documentation_file)) {
+        params$data_documentation_file <- params$data_documentation_file$name
+      } else {
+        params$data_documentation_file <- ""
+      }
+      if (is.data.frame(params$other_information_file)) {
+        params$other_information_file <- params$other_information_file$name
+      } else {
+        params$other_information_file <- ""
+      }
+      if (is.data.frame(params$additional_other_information_file)) {
+        params$additional_other_information_file <- params$additional_other_information_file$name
+      } else {
+        params$additional_other_information_file <- ""
+      }
+      if (is.data.frame(params$additional_material_file)) {
+        params$additional_material_file <- params$additional_material_file$name
+      } else {
+        params$additional_material_file <- ""
+      }
+
+      # Collected Variables: assemble the repeatable blocks into a single
+      # formatted string passed as `collected_variables`, then drop the raw
+      # per-block inputs and the add/remove buttons from the params list.
+      var_val <- function(id) {
+        v <- params[[id]]
+        if (is.null(v)) "" else trimws(v)
+      }
+      var_chunks <- lapply(var_ids(), function(id) {
+        nm <- var_val(paste0("var_name_", id))
+        pp <- var_val(paste0("var_preprocess_", id))
+        tr <- var_val(paste0("var_transform_", id))
+        if (nm == "" && pp == "" && tr == "") return(NULL)
+        paste0(
+          "Variable: ", if (nm == "") "(unnamed)" else nm, "\n",
+          "Preprocessing: ", pp, "\n",
+          "Transformation: ", tr
+        )
+      })
+      var_chunks <- Filter(Negate(is.null), var_chunks)
+      params$collected_variables <- if (length(var_chunks)) {
+        paste(unlist(var_chunks), collapse = "\n\n")
+      } else {
+        ""
+      }
+      # Remove the raw per-block inputs and the add/remove controls.
+      raw_var_keys <- grep("^(var_name_|var_preprocess_|var_transform_|remove_var_)",
+                           names(params), value = TRUE)
+      params[c(raw_var_keys, "add_variable")] <- NULL
+
+      # Additional Data Collection quantitative variables: same treatment,
+      # assembled into `quantitative_variables_collected`.
+      qvar_chunks <- lapply(qvar_ids(), function(id) {
+        nm <- var_val(paste0("qvar_name_", id))
+        op <- var_val(paste0("qvar_operation_", id))
+        tr <- var_val(paste0("qvar_transform_", id))
+        if (nm == "" && op == "" && tr == "") return(NULL)
+        paste0(
+          "Variable: ", if (nm == "") "(unnamed)" else nm, "\n",
+          "Operationalization: ", op, "\n",
+          "Transformation: ", tr
+        )
+      })
+      qvar_chunks <- Filter(Negate(is.null), qvar_chunks)
+      params$quantitative_variables_collected <- if (length(qvar_chunks)) {
+        paste(unlist(qvar_chunks), collapse = "\n\n")
+      } else {
+        ""
+      }
+      raw_qvar_keys <- grep("^(qvar_name_|qvar_operation_|qvar_transform_|remove_qvar_)",
+                            names(params), value = TRUE)
+      params[c(raw_qvar_keys, "add_qvar")] <- NULL
+
+      # Research Questions / Hypotheses and their per-RQ analysis plans.
+      # `research_questions` lists the RQs; `analysis_plan` pairs each RQ with
+      # its plan. Both follow the RQ ids currently displayed.
+      rq_list <- lapply(seq_along(rq_ids()), function(k) {
+        id <- rq_ids()[[k]]
+        txt <- var_val(paste0("rq_text_", id))
+        if (txt == "") return(NULL)
+        paste0("RQ / Hypothesis ", k, ": ", txt)
+      })
+      rq_list <- Filter(Negate(is.null), rq_list)
+      params$research_questions <- if (length(rq_list)) {
+        paste(unlist(rq_list), collapse = "\n\n")
+      } else {
+        ""
+      }
+      rq_plan_chunks <- lapply(seq_along(rq_ids()), function(k) {
+        id <- rq_ids()[[k]]
+        txt <- var_val(paste0("rq_text_", id))
+        pl  <- var_val(paste0("rqplan_", id))
+        if (txt == "" && pl == "") return(NULL)
+        paste0(
+          "RQ / Hypothesis ", k, ": ", if (txt == "") "(unnamed)" else txt, "\n",
+          "Analysis plan: ", pl
+        )
+      })
+      rq_plan_chunks <- Filter(Negate(is.null), rq_plan_chunks)
+      params$analysis_plan <- if (length(rq_plan_chunks)) {
+        paste(unlist(rq_plan_chunks), collapse = "\n\n")
+      } else {
+        ""
+      }
+      raw_rq_keys <- grep("^(rq_text_|rqplan_|remove_rq_)", names(params), value = TRUE)
+      params[c(raw_rq_keys, "add_rq")] <- NULL
       
       withProgress(message = "Generating document...", value = 0, {
         
