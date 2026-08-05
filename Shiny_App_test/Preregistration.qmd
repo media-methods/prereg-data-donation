@@ -5,6 +5,16 @@ format:
     toc: true
     toc-depth: 2
     number-sections: false
+  pdf:
+    toc: true
+    toc-depth: 2
+    number-sections: false
+    colorlinks: true
+    geometry:
+      - margin=1in
+    fontsize: 11pt
+    documentclass: article
+    papersize: a4
 params:
   # METADATA
   title: ""

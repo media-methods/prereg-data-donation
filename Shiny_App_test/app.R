@@ -7,6 +7,7 @@ library(shiny)
 library(quarto)
 library(bslib)
 library(lubridate)
+library(qpdf)   # pdf_combine(): merge the rendered PDF with uploaded attachments
 
 #rsconnect::deployApp()
 
@@ -1396,6 +1397,11 @@ ui <- page_fluid(
       downloadButton(
         "download_pdf",
         "Download Word document"
+      ),
+      
+      downloadButton(
+        "download_merged_pdf",
+        "Download PDF (with attachments)"
       )
     )
     )
@@ -1745,172 +1751,229 @@ server <- function(input, output, session) {
     do.call(tagList, items)
   })
   
+  # ----------------------------------------------------------------------------
+  # Shared: assemble the Quarto `execute_params` list from the current inputs.
+  # Both the Word and PDF download handlers call this so the two outputs are
+  # always built from an identical parameter set.
+  # ----------------------------------------------------------------------------
+  build_params <- function() {
+    params <- reactiveValuesToList(input)
+    # Drop the two download-button inputs; they are not document content.
+    params$download_pdf <- NULL
+    params$download_merged_pdf <- NULL
+
+    # dateInput returns a Date object; Quarto params expect a plain string.
+    if (!is.null(params$date)) {
+      params$date <- as.character(params$date)
+    } else {
+      params$date <- ""
+    }
+
+    # fileInput returns a data frame (name/size/type/datapath), which Quarto
+    # params can't accept. Replace each with just the uploaded file's name
+    # (a string), or "" if nothing was uploaded.
+    file_ids <- c("stimuli_file", "user_instructions_file",
+                  "data_documentation_file", "other_information_file",
+                  "additional_other_information_file", "additional_material_file")
+    for (fid in file_ids) {
+      params[[fid]] <- if (is.data.frame(params[[fid]])) params[[fid]]$name else ""
+    }
+
+    # Helper: current value of an input as trimmed text ("" if unset).
+    var_val <- function(id) {
+      v <- params[[id]]
+      if (is.null(v)) "" else trimws(v)
+    }
+
+    # Collected Variables: assemble the repeatable blocks into a single
+    # formatted string passed as `collected_variables`.
+    var_chunks <- lapply(var_ids(), function(id) {
+      nm <- var_val(paste0("var_name_", id))
+      pp <- var_val(paste0("var_preprocess_", id))
+      tr <- var_val(paste0("var_transform_", id))
+      if (nm == "" && pp == "" && tr == "") return(NULL)
+      paste0(
+        "Variable: ", if (nm == "") "(unnamed)" else nm, "\n",
+        "Preprocessing: ", pp, "\n",
+        "Transformation: ", tr
+      )
+    })
+    var_chunks <- Filter(Negate(is.null), var_chunks)
+    params$collected_variables <- if (length(var_chunks)) {
+      paste(unlist(var_chunks), collapse = "\n\n")
+    } else {
+      ""
+    }
+    raw_var_keys <- grep("^(var_name_|var_preprocess_|var_transform_|remove_var_)",
+                         names(params), value = TRUE)
+    params[c(raw_var_keys, "add_variable")] <- NULL
+
+    # Additional Data Collection quantitative variables: same treatment,
+    # assembled into `quantitative_variables_collected`.
+    qvar_chunks <- lapply(qvar_ids(), function(id) {
+      nm <- var_val(paste0("qvar_name_", id))
+      op <- var_val(paste0("qvar_operation_", id))
+      tr <- var_val(paste0("qvar_transform_", id))
+      if (nm == "" && op == "" && tr == "") return(NULL)
+      paste0(
+        "Variable: ", if (nm == "") "(unnamed)" else nm, "\n",
+        "Operationalization: ", op, "\n",
+        "Transformation: ", tr
+      )
+    })
+    qvar_chunks <- Filter(Negate(is.null), qvar_chunks)
+    params$quantitative_variables_collected <- if (length(qvar_chunks)) {
+      paste(unlist(qvar_chunks), collapse = "\n\n")
+    } else {
+      ""
+    }
+    raw_qvar_keys <- grep("^(qvar_name_|qvar_operation_|qvar_transform_|remove_qvar_)",
+                          names(params), value = TRUE)
+    params[c(raw_qvar_keys, "add_qvar")] <- NULL
+
+    # Research Questions / Hypotheses and their per-RQ analysis plans.
+    rq_list <- lapply(seq_along(rq_ids()), function(k) {
+      id <- rq_ids()[[k]]
+      txt <- var_val(paste0("rq_text_", id))
+      if (txt == "") return(NULL)
+      paste0("RQ / Hypothesis ", k, ": ", txt)
+    })
+    rq_list <- Filter(Negate(is.null), rq_list)
+    params$research_questions <- if (length(rq_list)) {
+      paste(unlist(rq_list), collapse = "\n\n")
+    } else {
+      ""
+    }
+    rq_plan_chunks <- lapply(seq_along(rq_ids()), function(k) {
+      id <- rq_ids()[[k]]
+      txt <- var_val(paste0("rq_text_", id))
+      pl  <- var_val(paste0("rqplan_", id))
+      if (txt == "" && pl == "") return(NULL)
+      paste0(
+        "RQ / Hypothesis ", k, ": ", if (txt == "") "(unnamed)" else txt, "\n",
+        "Analysis plan: ", pl
+      )
+    })
+    rq_plan_chunks <- Filter(Negate(is.null), rq_plan_chunks)
+    params$analysis_plan <- if (length(rq_plan_chunks)) {
+      paste(unlist(rq_plan_chunks), collapse = "\n\n")
+    } else {
+      ""
+    }
+    raw_rq_keys <- grep("^(rq_text_|rqplan_|remove_rq_)", names(params), value = TRUE)
+    params[c(raw_rq_keys, "add_rq")] <- NULL
+
+    params
+  }
+
+  # ----------------------------------------------------------------------------
+  # Shared: paths of the PDFs the user actually uploaded, in document order.
+  # Reads the raw fileInput values (data frames with a `datapath`) rather than
+  # the flattened params, and keeps only entries that are readable .pdf files.
+  # ----------------------------------------------------------------------------
+  uploaded_pdf_paths <- function() {
+    # Ordered to follow where each attachment is referenced in the rendered
+    # preregistration: Study Design (stimuli, participant instructions),
+    # then Data Donation, then Other Data, then References.
+    file_ids <- c("stimuli_file", "user_instructions_file",
+                  "data_documentation_file", "other_information_file",
+                  "additional_other_information_file", "additional_material_file")
+    paths <- character(0)
+    for (fid in file_ids) {
+      fi <- input[[fid]]
+      if (is.data.frame(fi) && nrow(fi) > 0) {
+        for (r in seq_len(nrow(fi))) {
+          dp <- fi$datapath[[r]]
+          nm <- tolower(fi$name[[r]])
+          if (!is.null(dp) && file.exists(dp) && grepl("\\.pdf$", nm)) {
+            paths <- c(paths, dp)
+          }
+        }
+      }
+    }
+    paths
+  }
+
+  # ----------------------------------------------------------------------------
+  # Render the qmd to a target format in a temp dir and return the output path.
+  # ----------------------------------------------------------------------------
+  render_prereg <- function(out_name, out_format) {
+    temp_dir <- tempdir()
+    temp_qmd <- file.path(temp_dir, "Preregistration.qmd")
+    file.copy("Preregistration.qmd", temp_qmd, overwrite = TRUE)
+
+    params <- build_params()
+
+    result <- try(
+      quarto::quarto_render(
+        input = temp_qmd,
+        output_format = out_format,
+        output_file = out_name,
+        execute_params = params
+      ),
+      silent = FALSE
+    )
+
+    out_path <- file.path(temp_dir, out_name)
+    if (inherits(result, "try-error") || !file.exists(out_path)) {
+      stop("Document generation error")
+    }
+    out_path
+  }
+
+  # ---- Word download ---------------------------------------------------------
   output$download_pdf <- downloadHandler(
-    
-    filename = function() {
-      "Preregistration.docx"
-    },
-    
+    filename = function() "Preregistration.docx",
     content = function(file) {
-      
-      temp_dir <- tempdir()
-      temp_qmd <- file.path(temp_dir, "Preregistration.qmd")
-      
-      file.copy("Preregistration.qmd", temp_qmd, overwrite = TRUE)
-      
-      params <- reactiveValuesToList(input)
-      params$download_pdf <- NULL
-      
-      # dateInput returns a Date object; Quarto params expect a plain string.
-      if (!is.null(params$date)) {
-        params$date <- as.character(params$date)
-      } else {
-        params$date <- ""
-      }
-      
-      # fileInput returns a data frame (name/size/type/datapath), which Quarto
-      # params can't accept. Replace it with just the uploaded file's name (a string),
-      # or "" if nothing was uploaded.
-      if (is.data.frame(params$stimuli_file)) {
-        params$stimuli_file <- params$stimuli_file$name
-      } else {
-        params$stimuli_file <- ""
-      }
-      if (is.data.frame(params$user_instructions_file)) {
-        params$user_instructions_file <- params$user_instructions_file$name
-      } else {
-        params$user_instructions_file <- ""
-      }
-      if (is.data.frame(params$data_documentation_file)) {
-        params$data_documentation_file <- params$data_documentation_file$name
-      } else {
-        params$data_documentation_file <- ""
-      }
-      if (is.data.frame(params$other_information_file)) {
-        params$other_information_file <- params$other_information_file$name
-      } else {
-        params$other_information_file <- ""
-      }
-      if (is.data.frame(params$additional_other_information_file)) {
-        params$additional_other_information_file <- params$additional_other_information_file$name
-      } else {
-        params$additional_other_information_file <- ""
-      }
-      if (is.data.frame(params$additional_material_file)) {
-        params$additional_material_file <- params$additional_material_file$name
-      } else {
-        params$additional_material_file <- ""
-      }
+      withProgress(message = "Generating Word document...", value = 0, {
+        incProgress(0.3, detail = "Rendering")
+        docx_path <- render_prereg("Preregistration.docx", "docx")
+        incProgress(0.6, detail = "Finalizing")
+        file.copy(docx_path, file, overwrite = TRUE)
+      })
+    }
+  )
 
-      # Collected Variables: assemble the repeatable blocks into a single
-      # formatted string passed as `collected_variables`, then drop the raw
-      # per-block inputs and the add/remove buttons from the params list.
-      var_val <- function(id) {
-        v <- params[[id]]
-        if (is.null(v)) "" else trimws(v)
-      }
-      var_chunks <- lapply(var_ids(), function(id) {
-        nm <- var_val(paste0("var_name_", id))
-        pp <- var_val(paste0("var_preprocess_", id))
-        tr <- var_val(paste0("var_transform_", id))
-        if (nm == "" && pp == "" && tr == "") return(NULL)
-        paste0(
-          "Variable: ", if (nm == "") "(unnamed)" else nm, "\n",
-          "Preprocessing: ", pp, "\n",
-          "Transformation: ", tr
-        )
-      })
-      var_chunks <- Filter(Negate(is.null), var_chunks)
-      params$collected_variables <- if (length(var_chunks)) {
-        paste(unlist(var_chunks), collapse = "\n\n")
-      } else {
-        ""
-      }
-      # Remove the raw per-block inputs and the add/remove controls.
-      raw_var_keys <- grep("^(var_name_|var_preprocess_|var_transform_|remove_var_)",
-                           names(params), value = TRUE)
-      params[c(raw_var_keys, "add_variable")] <- NULL
+  # ---- PDF download (prereg + uploaded PDFs merged into one file) ------------
+  output$download_merged_pdf <- downloadHandler(
+    filename = function() "Preregistration.pdf",
+    content = function(file) {
+      withProgress(message = "Generating PDF...", value = 0, {
 
-      # Additional Data Collection quantitative variables: same treatment,
-      # assembled into `quantitative_variables_collected`.
-      qvar_chunks <- lapply(qvar_ids(), function(id) {
-        nm <- var_val(paste0("qvar_name_", id))
-        op <- var_val(paste0("qvar_operation_", id))
-        tr <- var_val(paste0("qvar_transform_", id))
-        if (nm == "" && op == "" && tr == "") return(NULL)
-        paste0(
-          "Variable: ", if (nm == "") "(unnamed)" else nm, "\n",
-          "Operationalization: ", op, "\n",
-          "Transformation: ", tr
-        )
-      })
-      qvar_chunks <- Filter(Negate(is.null), qvar_chunks)
-      params$quantitative_variables_collected <- if (length(qvar_chunks)) {
-        paste(unlist(qvar_chunks), collapse = "\n\n")
-      } else {
-        ""
-      }
-      raw_qvar_keys <- grep("^(qvar_name_|qvar_operation_|qvar_transform_|remove_qvar_)",
-                            names(params), value = TRUE)
-      params[c(raw_qvar_keys, "add_qvar")] <- NULL
+        incProgress(0.2, detail = "Rendering preregistration")
+        prereg_pdf <- render_prereg("Preregistration.pdf", "pdf")
 
-      # Research Questions / Hypotheses and their per-RQ analysis plans.
-      # `research_questions` lists the RQs; `analysis_plan` pairs each RQ with
-      # its plan. Both follow the RQ ids currently displayed.
-      rq_list <- lapply(seq_along(rq_ids()), function(k) {
-        id <- rq_ids()[[k]]
-        txt <- var_val(paste0("rq_text_", id))
-        if (txt == "") return(NULL)
-        paste0("RQ / Hypothesis ", k, ": ", txt)
+        incProgress(0.5, detail = "Collecting attachments")
+        attachments <- uploaded_pdf_paths()
+
+        # The rendered preregistration comes first, then each uploaded PDF.
+        to_merge <- c(prereg_pdf, attachments)
+
+        incProgress(0.7, detail = "Merging into a single PDF")
+        if (length(to_merge) == 1L) {
+          # Nothing uploaded: the preregistration alone is the output.
+          file.copy(prereg_pdf, file, overwrite = TRUE)
+        } else {
+          merged <- file.path(tempdir(), "Preregistration_merged.pdf")
+          ok <- try(
+            qpdf::pdf_combine(input = to_merge, output = merged),
+            silent = FALSE
+          )
+          if (inherits(ok, "try-error") || !file.exists(merged)) {
+            # Fall back to the preregistration on its own rather than failing
+            # the download entirely.
+            showNotification(
+              "Could not merge the uploaded PDFs; downloading the preregistration only. Please check that each upload is a valid PDF.",
+              type = "warning", duration = 8
+            )
+            file.copy(prereg_pdf, file, overwrite = TRUE)
+          } else {
+            file.copy(merged, file, overwrite = TRUE)
+          }
+        }
+
+        incProgress(0.9, detail = "Finalizing")
       })
-      rq_list <- Filter(Negate(is.null), rq_list)
-      params$research_questions <- if (length(rq_list)) {
-        paste(unlist(rq_list), collapse = "\n\n")
-      } else {
-        ""
-      }
-      rq_plan_chunks <- lapply(seq_along(rq_ids()), function(k) {
-        id <- rq_ids()[[k]]
-        txt <- var_val(paste0("rq_text_", id))
-        pl  <- var_val(paste0("rqplan_", id))
-        if (txt == "" && pl == "") return(NULL)
-        paste0(
-          "RQ / Hypothesis ", k, ": ", if (txt == "") "(unnamed)" else txt, "\n",
-          "Analysis plan: ", pl
-        )
-      })
-      rq_plan_chunks <- Filter(Negate(is.null), rq_plan_chunks)
-      params$analysis_plan <- if (length(rq_plan_chunks)) {
-        paste(unlist(rq_plan_chunks), collapse = "\n\n")
-      } else {
-        ""
-      }
-      raw_rq_keys <- grep("^(rq_text_|rqplan_|remove_rq_)", names(params), value = TRUE)
-      params[c(raw_rq_keys, "add_rq")] <- NULL
-      
-      withProgress(message = "Generating document...", value = 0, {
-        
-        incProgress(0.2, detail = "Preparing document")
-        
-        result <- try(
-          quarto::quarto_render(
-            input = temp_qmd,
-            output_file = "Preregistration.docx",
-            execute_params = params
-          ),
-          silent = FALSE
-        )
-        
-        incProgress(0.8, detail = "Finalizing document")
-      })
-      
-      docx_path <- file.path(temp_dir, "Preregistration.docx")
-      
-      if (!file.exists(docx_path)) {
-        stop("Document generation error")
-      }
-      
-      file.copy(docx_path, file, overwrite = TRUE)
     }
   )
 }
