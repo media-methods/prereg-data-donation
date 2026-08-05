@@ -1,613 +1,457 @@
 ---
 title: "Preregistration Data Donation Template"
 format:
-  pdf:
+  docx:
     toc: true
     toc-depth: 2
-
     number-sections: false
-
-    colorlinks: false
-
-    geometry:
-      - margin=1in
-
-    fontsize: 11pt
-
-    documentclass: scrartcl
-
-    papersize: a4
-
-    titlepage: true
-
-    include-in-header:
-      text: |
-        \usepackage{xcolor}
-        \definecolor{black}{HTML}{2B6CB0}
-
-        \usepackage{titlesec}
-
-        \titleformat{\section}
-        {\Large\bfseries\color{black}}
-        {\thesection}
-        {1em}
-        {}
-
-        \titleformat{\subsection}
-        {\large\bfseries}
-        {}
-        {0em}
-        {}
-
-        \usepackage{tcolorbox}
-
-        \tcbset{
-          colback=black!2,
-          colframe=black!25,
-          arc=3mm
-        }
-         \usepackage{etoolbox}
-
-        \makeatletter
-        \patchcmd{\tableofcontents}
-          {\endgroup}
-          {\endgroup\clearpage}
-          {}{}
-        \makeatother
-
-  
 params:
   # METADATA
   title: ""
   authors: ""
   date: ""
-  version_identifier: ""
   license: ""
-  keywords: ""
-  funding: ""
   ethics: ""
   foreknowledge: ""
   foreknowledge_explanation: ""
 
-  # STUDY OVERVIEW
+  # RESEARCH QUESTIONS & HYPOTHESES
   background: ""
-  objectives: ""
-  hypotheses: ""
-  exploratory_questions: ""
-  ddp_justification: ""
+  research_questions: ""
 
-  # DATA SOURCES
-  platform_tool: ""
-  access_method: ""
-  dataset_description: ""
-  download_dates: ""
-  availability: ""
-  prior_knowledge: ""
-  codebook: ""
-  collection_procedures: ""
-  privacy_security: ""
+  # GENERAL STUDY DESIGN
+  study_type_general: ""
+  study_type_other: ""
+  researcher_workflow: ""
+  user_workflow: ""
+  experimental_conditions: ""
+  blinding_experiment: ""
+  randomization_general: ""
+  informed_consent: ""
 
-  # SAMPLING
+  # SAMPLING PLAN
   population: ""
-  recruitment: ""
   sample_size: ""
-  stopping_rule: ""
-  representativeness: ""
+  platform_population: ""
+  platform_sample_size: ""
+  observation_period: ""
+  representation_errors: ""
 
-  # DATA STRUCTURE
-  raw_data_structure: ""
+  # MEASURES: DATA DONATION
+  raw_data_donation: ""
+  collected_variables: ""
+  new_variables: ""
+  quality_control: ""
+  measurement_error_reflections: ""
+  other_information: ""
+
+  # MEASURES: OTHER DATA
+  quantitative_variables_collected: ""
+  qualitative_variables: ""
+  additional_other_information: ""
+
+  # ANALYSIS PLAN
   data_cleaning: ""
-  feature_extraction: ""
-  assumptions: ""
-  missing_data: ""
-
-  # STUDY DESIGN
-  study_type: ""
-  blinding: ""
-  design_description: ""
-  conditions: ""
-  randomization: ""
-
-  # MEASUREMENTS
-  independent_variables: ""
-  dependent_variables: ""
-  control_variables: ""
-  derived_variables: ""
-  platform_indicators: ""
-
-  # ANALYSIS
-  primary_analyses: ""
-  secondary_analyses: ""
+  analysis_plan: ""
   inference_criteria: ""
-  modeling_parameters: ""
-  performance_measures: ""
-  software_packages: ""
-  reproducibility: ""
-
-  # RISKS
-  participant_risks: ""
-  risk_mitigation: ""
-  ethical_justification: ""
-
-  # OPEN SCIENCE
-  data_sharing: ""
-  code_sharing: ""
-  pipeline_documentation: ""
-  update_policy: ""
 
   # REFERENCES
-  citations: ""
-  appendices: ""
+  references: ""
+
+  # UPLOADED FILE NAMES (recorded as attachments)
+  data_documentation_file: ""
+  stimuli_file: ""
+  user_instructions_file: ""
+  other_information_file: ""
+  additional_other_information_file: ""
+  additional_material_file: ""
 ---
 
 ```{r}
 #| include: false
 
-render_text <- function(x, width = 80) {
+# Print a parameter value as flowing text. Empty/NULL values render as a
+# light placeholder so reviewers can see the field was left blank rather than
+# a section silently disappearing. Multi-line inputs (repeatable blocks join
+# their entries with blank lines) are split into separate paragraphs.
+render_text <- function(x) {
+  if (is.null(x) || length(x) == 0 || all(trimws(x) == "")) {
+    cat("*(not specified)*")
+    return(invisible())
+  }
+  # Split on blank lines into paragraphs; keep single newlines as soft breaks.
+  paras <- strsplit(x, "\n[[:space:]]*\n")[[1]]
+  paras <- paras[trimws(paras) != ""]
+  cat(paste(trimws(paras), collapse = "\n\n"))
+}
 
-  if (is.null(x) || x == "") return(invisible())
-
-  cat(
-    strwrap(
-      x,
-      width = width
-    ),
-    sep = "\n"
-  )
+# Record an uploaded file, if one was provided.
+render_file <- function(x) {
+  if (is.null(x) || length(x) == 0 || all(trimws(x) == "")) {
+    cat("*(no file uploaded)*")
+    return(invisible())
+  }
+  cat("Attached file: ", trimws(x), sep = "")
 }
 ```
 
+# Metadata
 
-# Metadata:
-
-## Title:
+## Title
 
 ```{r}
 #| echo: false
-  render_text(params$title)
+#| output: asis
+render_text(params$title)
 ```
 
-## Authors & Affiliations:
+## Authors & Affiliations
 
 ```{r}
 #| echo: false
+#| output: asis
 render_text(params$authors)
 ```
 
-## Date of Preregistration:
-
-```{r}
-#| echo: false 
-cat(format(as.Date(params$date), "%B %d, %Y"))
-```
-
-## Version identifier
+## Date of Preregistration
 
 ```{r}
 #| echo: false
-render_text(params$version_identifier)
+#| output: asis
+d <- suppressWarnings(as.Date(params$date))
+if (is.null(params$date) || is.na(d)) {
+  cat("*(not specified)*")
+} else {
+  cat(format(d, "%B %d, %Y"))
+}
 ```
 
-## License (choose from the OSF license list)
+## License
 
 ```{r}
 #| echo: false
-
+#| output: asis
 render_text(params$license)
-
 ```
 
-## Keywords
+## Ethics Approval / IRB Status
 
 ```{r}
 #| echo: false
-render_text(params$keywords)
-```
-
-## Funding
-
-```{r}
-#| echo: false
-render_text(params$funding)
-```
-
-## Ethics
-
-```{r}
-#| echo: false
+#| output: asis
 render_text(params$ethics)
 ```
 
-## Foreknowledge of Data or Evidence
+## Status of Study (Foreknowledge of Data or Evidence)
 
 ```{r}
 #| echo: false
+#| output: asis
 render_text(params$foreknowledge)
 ```
 
-## Explanation of Foreknowledge and Managing Unintended Influences
+## Explanation of Data Foreknowledge
 
 ```{r}
 #| echo: false
+#| output: asis
 render_text(params$foreknowledge_explanation)
 ```
 
-\clearpage
-# Study Overview
+{{< pagebreak >}}
 
-## Background
+# Research Questions & Hypotheses
+
+## Background & Rationale
 
 ```{r}
 #| echo: false
+#| output: asis
 render_text(params$background)
 ```
 
-## Objectives
+## Research Questions or Hypotheses
 
 ```{r}
 #| echo: false
-render_text(params$objectives)
+#| output: asis
+render_text(params$research_questions)
 ```
 
-## Hypotheses
+{{< pagebreak >}}
 
-```{r}
-#| echo: false
-render_text(params$hypotheses)
-```
-
-## Exploratory Questions
-
-```{r}
-#| echo: false
-render_text(params$exploratory_questions)
-```
-
-## DDP Justification
-
-```{r}
-#| echo: false
-render_text(params$ddp_justification)
-```
-
-\clearpage
-# Data sources
-
-## Platform Tools
-
-```{r}
-#| echo: false
-render_text(params$platform_tool)
-```
-
-## Access Method
-
-```{r}
-#| echo: false
-render_text(params$access_method)
-```
-
-## Dataset Description
-
-```{r}
-#| echo: false
-render_text(params$dataset_description)
-```
-
-## Download Dates
-
-```{r}
-#| echo: false
-render_text(params$download_dates)
-```
-
-## Availability
-
-```{r}
-#| echo: false
-render_text(params$availability)
-```
-
-## Prior Knowledge
-
-```{r}
-#| echo: false
-render_text(params$prior_knowledge)
-```
-
-## Codebook
-
-```{r}
-#| echo: false
-render_text(params$codebook)
-```
-
-## Collection Procedures
-
-```{r}
-#| echo: false
-render_text(params$collection_procedures)
-```
-
-## Privacy Security
-
-```{r}
-#| echo: false
-render_text(params$privacy_security)
-```
-
-\clearpage
-# Sampling
-
-## Population
-
-```{r}
-#| echo: false
-render_text(params$population)
-```
-
-## Recruitment
-
-```{r}
-#| echo: false
-render_text(params$recruitment)
-```
-
-## Sample Size
-
-```{r}
-#| echo: false
-render_text(params$sample_size)
-```
-
-## Stopping Rule
-
-```{r}
-#| echo: false
-render_text(params$stopping_rule)
-```
-
-## Representativeness
-
-```{r}
-#| echo: false
-render_text(params$representativeness)
-```
-
-\clearpage
-# Data Structure
-
-## Raw Data Structure
-
-```{r}
-#| echo: false
-render_text(params$raw_data_structure)
-```
-
-## Data Cleaning
-
-```{r}
-#| echo: false
-render_text(params$data_cleaning)
-```
-
-## Feature Extraction
-
-```{r}
-#| echo: false
-render_text(params$feature_extraction)
-```
-
-## Assumptions
-
-```{r}
-#| echo: false
-render_text(params$assumptions)
-```
-
-## Missing Data
-
-```{r}
-#| echo: false
-render_text(params$missing_data)
-```
-
-\clearpage
-# Study Design
+# General Study Design
 
 ## Study Type
 
 ```{r}
 #| echo: false
-render_text(params$study_type)
+#| output: asis
+render_text(params$study_type_general)
+```
+
+## Description of Study Type
+
+```{r}
+#| echo: false
+#| output: asis
+render_text(params$study_type_other)
+```
+
+## Researcher-Side Workflow & Tool for Data Donation
+
+```{r}
+#| echo: false
+#| output: asis
+render_text(params$researcher_workflow)
+```
+
+## User-Side Workflow & Data Collection Procedure
+
+```{r}
+#| echo: false
+#| output: asis
+render_text(params$user_workflow)
+```
+
+## Experimental Conditions
+
+```{r}
+#| echo: false
+#| output: asis
+render_text(params$experimental_conditions)
+```
+
+```{r}
+#| echo: false
+#| output: asis
+render_file(params$stimuli_file)
 ```
 
 ## Blinding
 
 ```{r}
 #| echo: false
-render_text(params$blinding)
-```
-
-## Design Description
-
-```{r}
-#| echo: false
-render_text(params$design_description)
-```
-
-## Conditions
-
-```{r}
-#| echo: false
-render_text(params$conditions)
+#| output: asis
+render_text(params$blinding_experiment)
 ```
 
 ## Randomization
 
 ```{r}
 #| echo: false
-render_text(params$randomization)
+#| output: asis
+render_text(params$randomization_general)
 ```
 
-\clearpage
-# Measurements
-
-## Independent Variables
+## Informed Consent
 
 ```{r}
 #| echo: false
-render_text(params$independent_variables)
+#| output: asis
+render_text(params$informed_consent)
 ```
-
-## Dependent Variables
 
 ```{r}
 #| echo: false
-render_text(params$dependent_variables)
+#| output: asis
+render_file(params$user_instructions_file)
 ```
 
-## Control Variables
+{{< pagebreak >}}
+
+# Sampling Plan
+
+## Participants — Target Population & Sample
 
 ```{r}
 #| echo: false
-render_text(params$control_variables)
+#| output: asis
+render_text(params$population)
 ```
 
-## Derived Variables
+## Participants — Sample Size
 
 ```{r}
 #| echo: false
-render_text(params$derived_variables)
+#| output: asis
+render_text(params$sample_size)
 ```
 
-## Platform Indicators
+## Platforms/Devices — Target Population & Sample
 
 ```{r}
 #| echo: false
-render_text(params$platform_indicators)
+#| output: asis
+render_text(params$platform_population)
 ```
 
-\clearpage
-# Analysis
-
-## Primary Analyses
+## Platforms/Devices — Sample Size
 
 ```{r}
 #| echo: false
-render_text(params$primary_analyses)
+#| output: asis
+render_text(params$platform_sample_size)
 ```
 
-## Secondary Analyses
+## Observation Period
 
 ```{r}
 #| echo: false
-render_text(params$secondary_analyses)
+#| output: asis
+render_text(params$observation_period)
+```
+
+## Reflections on Errors in Representation
+
+```{r}
+#| echo: false
+#| output: asis
+render_text(params$representation_errors)
+```
+
+{{< pagebreak >}}
+
+# Measures: Data Donation
+
+## Raw Data Structure
+
+```{r}
+#| echo: false
+#| output: asis
+render_text(params$raw_data_donation)
+```
+
+```{r}
+#| echo: false
+#| output: asis
+render_file(params$data_documentation_file)
+```
+
+## Collected Variables
+
+```{r}
+#| echo: false
+#| output: asis
+render_text(params$collected_variables)
+```
+
+## Any Other Variables Derived from the Data Donations
+
+```{r}
+#| echo: false
+#| output: asis
+render_text(params$new_variables)
+```
+
+## Quality Control Procedures
+
+```{r}
+#| echo: false
+#| output: asis
+render_text(params$quality_control)
+```
+
+## Reflections on Measurement Errors
+
+```{r}
+#| echo: false
+#| output: asis
+render_text(params$measurement_error_reflections)
+```
+
+## Other Information
+
+```{r}
+#| echo: false
+#| output: asis
+render_text(params$other_information)
+```
+
+```{r}
+#| echo: false
+#| output: asis
+render_file(params$other_information_file)
+```
+
+{{< pagebreak >}}
+
+# Measures: Other Data
+
+## Variables Collected from Other Quantitative Data Collection
+
+```{r}
+#| echo: false
+#| output: asis
+render_text(params$quantitative_variables_collected)
+```
+
+## Variables Collected from Other Qualitative Data Collection
+
+```{r}
+#| echo: false
+#| output: asis
+render_text(params$qualitative_variables)
+```
+
+## Other Information
+
+```{r}
+#| echo: false
+#| output: asis
+render_text(params$additional_other_information)
+```
+
+```{r}
+#| echo: false
+#| output: asis
+render_file(params$additional_other_information_file)
+```
+
+{{< pagebreak >}}
+
+# Analysis Plan
+
+## Data Cleaning
+
+```{r}
+#| echo: false
+#| output: asis
+render_text(params$data_cleaning)
+```
+
+## Analysis
+
+```{r}
+#| echo: false
+#| output: asis
+render_text(params$analysis_plan)
 ```
 
 ## Inference Criteria
 
 ```{r}
 #| echo: false
+#| output: asis
 render_text(params$inference_criteria)
 ```
 
-## Modeling Parameters
+{{< pagebreak >}}
 
-```{r}
-#| echo: false
-render_text(params$modeling_parameters)
-```
-
-## Performance Measures
-
-```{r}
-#| echo: false
-render_text(params$performance_measures)
-```
-
-## Software Packages
-
-```{r}
-#| echo: false
-render_text(params$software_packages)
-```
-
-## Reproducibility
-
-```{r}
-#| echo: false
-render_text(params$reproducibility)
-```
-
-\clearpage
-# Risks
-
-## Participant Risks
-
-```{r}
-#| echo: false
-render_text(params$participant_risks)
-```
-
-## Risk Mitigation
-
-```{r}
-#| echo: false
-render_text(params$risk_mitigation)
-```
-
-## Ethical Justification
-
-```{r}
-#| echo: false
-render_text(params$ethical_justification)
-```
-
-\clearpage
-# Open Science
-
-## Data Sharing
-
-```{r}
-#| echo: false
-render_text(params$data_sharing)
-```
-
-## Code Sharing
-
-```{r}
-#| echo: false
-render_text(params$code_sharing)
-```
-
-## Pipeline documentation
-
-```{r}
-#| echo: false
-render_text(params$pipeline_documentation)
-```
-
-## Update Policy
-
-```{r}
-#| echo: false
-render_text(params$update_policy)
-```
-
-\clearpage
 # References
 
-## Citations
+## References
 
 ```{r}
 #| echo: false
-render_text(params$citations)
+#| output: asis
+render_text(params$references)
 ```
 
-## Appendices
+## Any Additional Information
 
 ```{r}
 #| echo: false
-render_text(params$appendices)
+#| output: asis
+render_file(params$additional_material_file)
 ```
