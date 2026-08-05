@@ -4,6 +4,7 @@
 
 library(rsconnect)
 library(shiny)
+library(shinyjs)
 library(quarto)
 library(bslib)
 library(lubridate)
@@ -30,6 +31,8 @@ field <- function(title, hint, input_tag) {
 }
 
 ui <- page_fluid(
+  
+  useShinyjs(),
   
   theme = bs_theme(
     version = 5,
@@ -799,6 +802,11 @@ ui <- page_fluid(
       .card {
         padding-bottom: 90px;
       }
+
+      /* keep the format chooser flush with the Download button (remove its
+         default bottom margin so the two line up on the same baseline) */
+      #output_format + .selectize-control { margin-bottom: 0; }
+      .shiny-input-container:has(#output_format) { margin-bottom: 0; }
       
     "))
   ),
@@ -1240,7 +1248,7 @@ ui <- page_fluid(
           
           field("Upload additional material",
             "Upload a single PDF of the current data documentation by platforms, if available.",
-            fileInput("data_documentation_file", label = NULL, accept = ".pdf",
+            fileInput("data_documentation_file", label = NULL, accept = c(".pdf", "application/pdf"),
                       buttonLabel = "Browse...", placeholder = "No file selected")),
           
           div(
@@ -1285,7 +1293,7 @@ ui <- page_fluid(
           
           field("Upload additional material",
             "Upload a single PDF with any additional material related to the data donation, if necessary.",
-            fileInput("other_information_file", label = NULL, accept = ".pdf",
+            fileInput("other_information_file", label = NULL, accept = c(".pdf", "application/pdf"),
                       buttonLabel = "Browse...", placeholder = "No file selected"))
         )
       ),
@@ -1325,7 +1333,7 @@ ui <- page_fluid(
           
           field("Upload additional material",
             "Upload a single PDF with any additional material related to the additional data collection, if necessary.",
-            fileInput("additional_other_information_file", label = NULL, accept = ".pdf",
+            fileInput("additional_other_information_file", label = NULL, accept = c(".pdf", "application/pdf"),
                       buttonLabel = "Browse...", placeholder = "No file selected"))
         )
       ),
@@ -1383,7 +1391,7 @@ ui <- page_fluid(
           
           field("2. Any Additional Information",
             "Here, you can upload any type of additional material accompanying your preregistration.",
-            fileInput("additional_material_file", label = NULL, accept = ".pdf",
+            fileInput("additional_material_file", label = NULL, accept = c(".pdf", "application/pdf"),
                       buttonLabel = "Browse...", placeholder = "No file selected"))
         )
       )
@@ -1392,16 +1400,44 @@ ui <- page_fluid(
     br(),
     
     div(
-      style = "display:flex; gap:12px; justify-content:right;",
+      style = "display:flex; gap:10px; justify-content:right; align-items:center;",
       
-      downloadButton(
-        "download_pdf",
-        "Download Word document"
+      # Info tooltip: explains what each format includes.
+      bslib::tooltip(
+        span(
+          style = paste(
+            "display:inline-flex; align-items:center; justify-content:center;",
+            "width:20px; height:20px; border-radius:50%;",
+            "border:1px solid #9aa0a6; color:#5f6368; font-size:13px;",
+            "font-style:italic; font-family:Georgia,serif; cursor:help;"
+          ),
+          "i"
+        ),
+        paste(
+          "Word (.docx) includes the text you have entered only.",
+          "PDF (.pdf) includes the same text plus every PDF you uploaded,",
+          "merged into a single file with a divider page before each",
+          "attachment noting the section it belongs to."
+        ),
+        placement = "top"
       ),
       
+      # Format chooser.
+      div(
+        style = "width:150px;",
+        selectInput(
+          "output_format",
+          label = NULL,
+          choices = c("Word (.docx)" = "docx", "PDF (.pdf)" = "pdf"),
+          selected = "docx",
+          width = "100%"
+        )
+      ),
+      
+      # Single download button; its behaviour follows the chooser above.
       downloadButton(
-        "download_merged_pdf",
-        "Download PDF (with attachments)"
+        "download_doc",
+        "Download"
       )
     )
     )
@@ -1413,6 +1449,49 @@ ui <- page_fluid(
 # ==================================================================================
 
 server <- function(input, output, session) {
+
+  # ---- Enforce PDF-only uploads ------------------------------------------
+  # The `accept = ".pdf"` argument on each fileInput only filters the browser
+  # file-picker; a user can still choose "All files" or drag-and-drop another
+  # type. This observer is the real gate: if any upload is not a PDF, it is
+  # rejected, the input is reset, and the user is told why. Downstream code
+  # (Word name extraction, PDF merge) therefore only ever sees PDFs.
+  upload_input_ids <- c("data_documentation_file", "other_information_file",
+                        "additional_other_information_file",
+                        "additional_material_file", "user_instructions_file",
+                        "stimuli_file")
+
+  is_pdf_upload <- function(fi) {
+    # A valid row is a .pdf by extension and, when the browser supplies a type,
+    # an application/pdf MIME type. Empty/absent type is allowed (some browsers
+    # don't report it), but a wrong non-empty type is rejected.
+    ext_ok  <- grepl("\\.pdf$", tolower(fi$name))
+    type_ok <- is.na(fi$type) | fi$type == "" | fi$type == "application/pdf"
+    ext_ok & type_ok
+  }
+
+  lapply(upload_input_ids, function(fid) {
+    observeEvent(input[[fid]], {
+      fi <- input[[fid]]
+      if (is.data.frame(fi) && nrow(fi) > 0) {
+        bad <- !is_pdf_upload(fi)
+        if (any(bad)) {
+          shinyjs::reset(fid)  # clear the widget so the invalid file is dropped
+          showNotification(
+            paste0(
+              "Only PDF files can be uploaded. ",
+              if (sum(bad) == 1)
+                paste0("\u201C", fi$name[bad][1], "\u201D was not accepted.")
+              else
+                paste0(sum(bad), " files were not accepted."),
+              " Please upload a .pdf file."
+            ),
+            type = "error", duration = 8
+          )
+        }
+      }
+    }, ignoreInit = TRUE)
+  })
 
   # ---- Collected Variables: repeatable variable blocks ----
   # Each block has a stable integer id used to build unique input ids
@@ -1703,7 +1782,7 @@ server <- function(input, output, session) {
       field(
         "Upload additional material",
         "Upload a single PDF containing example participant instructions, if necessary.",
-        fileInput("user_instructions_file", label = NULL, accept = ".pdf",
+        fileInput("user_instructions_file", label = NULL, accept = c(".pdf", "application/pdf"),
                   buttonLabel = "Browse...", placeholder = "No file selected")
       )
     ))
@@ -1719,7 +1798,7 @@ server <- function(input, output, session) {
         field(
           "Upload additional material",
           "Upload a single PDF containing example stimuli, if necessary",
-          fileInput("stimuli_file", label = NULL, accept = ".pdf",
+          fileInput("stimuli_file", label = NULL, accept = c(".pdf", "application/pdf"),
                     buttonLabel = "Browse...", placeholder = "No file selected")
         ),
         field(
@@ -1758,9 +1837,16 @@ server <- function(input, output, session) {
   # ----------------------------------------------------------------------------
   build_params <- function() {
     params <- reactiveValuesToList(input)
-    # Drop the two download-button inputs; they are not document content.
-    params$download_pdf <- NULL
-    params$download_merged_pdf <- NULL
+    # Drop the download button and format chooser; they are not document content.
+    params$download_doc <- NULL
+    params$output_format <- NULL
+
+    # shinyjs::reset() registers helper inputs named like
+    # "shinyjs-resettable-<id>"; these are not document content and would be
+    # rejected by Quarto as params not declared in the qmd YAML. Remove any
+    # shinyjs-generated keys before building the parameter list.
+    shinyjs_keys <- grep("shinyjs", names(params), value = TRUE, fixed = TRUE)
+    if (length(shinyjs_keys)) params[shinyjs_keys] <- NULL
 
     # dateInput returns a Date object; Quarto params expect a plain string.
     if (!is.null(params$date)) {
@@ -1863,35 +1949,93 @@ server <- function(input, output, session) {
     raw_rq_keys <- grep("^(rq_text_|rqplan_|remove_rq_)", names(params), value = TRUE)
     params[c(raw_rq_keys, "add_rq")] <- NULL
 
+    # Final safeguard: pass only parameters the qmd actually declares. Reading
+    # the declared names from the qmd keeps this in sync automatically, and any
+    # stray input (e.g. shinyjs helpers, future widgets) is dropped rather than
+    # causing Quarto to error on an undeclared param.
+    declared <- tryCatch({
+      yl <- readLines("Preregistration.qmd", warn = FALSE)
+      p_start <- grep("^params:", yl)
+      if (length(p_start)) {
+        rest <- yl[(p_start[1] + 1):length(yl)]
+        # param block runs until the next top-level (non-indented) key.
+        end <- which(grepl("^[^[:space:]]", rest))
+        block <- if (length(end)) rest[seq_len(end[1] - 1)] else rest
+        nm <- sub("^[[:space:]]+([A-Za-z0-9_]+):.*$", "\\1", block)
+        nm[grepl("^[A-Za-z0-9_]+$", nm)]
+      } else character(0)
+    }, error = function(e) character(0))
+
+    if (length(declared)) {
+      params <- params[intersect(names(params), declared)]
+      # Ensure every declared param exists (empty string if never set), so the
+      # qmd never sees a missing param.
+      for (d in setdiff(declared, names(params))) params[[d]] <- ""
+    }
+
     params
   }
 
   # ----------------------------------------------------------------------------
-  # Shared: paths of the PDFs the user actually uploaded, in document order.
-  # Reads the raw fileInput values (data frames with a `datapath`) rather than
-  # the flattened params, and keeps only entries that are readable .pdf files.
+  # Shared: the PDFs the user actually uploaded, in document order, each with a
+  # human-readable label for the section it was uploaded in. Reads the raw
+  # fileInput values (data frames with a `datapath`) rather than the flattened
+  # params, and keeps only readable .pdf files. Returns a data frame with
+  # columns: path, section, name  (zero rows if nothing was uploaded).
   # ----------------------------------------------------------------------------
   uploaded_pdf_paths <- function() {
-    # Ordered to follow where each attachment is referenced in the rendered
-    # preregistration: Study Design (stimuli, participant instructions),
-    # then Data Donation, then Other Data, then References.
-    file_ids <- c("stimuli_file", "user_instructions_file",
-                  "data_documentation_file", "other_information_file",
-                  "additional_other_information_file", "additional_material_file")
-    paths <- character(0)
-    for (fid in file_ids) {
+    # id -> section label, ordered to follow where each attachment is
+    # referenced in the rendered preregistration.
+    file_sections <- list(
+      stimuli_file                     = "General Study Design: Stimuli / Experimental Materials",
+      user_instructions_file           = "General Study Design: Informed Consent / Participant Instructions",
+      data_documentation_file          = "Measures - Data Donation: Data Documentation",
+      other_information_file            = "Measures - Data Donation: Other Information",
+      additional_other_information_file = "Measures - Other Data: Additional Information",
+      additional_material_file         = "References: Additional Material"
+    )
+    out <- data.frame(path = character(0), section = character(0),
+                      name = character(0), stringsAsFactors = FALSE)
+    for (fid in names(file_sections)) {
       fi <- input[[fid]]
       if (is.data.frame(fi) && nrow(fi) > 0) {
         for (r in seq_len(nrow(fi))) {
           dp <- fi$datapath[[r]]
-          nm <- tolower(fi$name[[r]])
-          if (!is.null(dp) && file.exists(dp) && grepl("\\.pdf$", nm)) {
-            paths <- c(paths, dp)
+          nm <- fi$name[[r]]
+          if (!is.null(dp) && file.exists(dp) &&
+              grepl("\\.pdf$", tolower(nm))) {
+            out <- rbind(out, data.frame(
+              path = dp, section = file_sections[[fid]], name = nm,
+              stringsAsFactors = FALSE
+            ))
           }
         }
       }
     }
-    paths
+    out
+  }
+
+  # ----------------------------------------------------------------------------
+  # Build a one-page A4 "divider" PDF announcing the section an attachment came
+  # from. Uses the base pdf() device, so it needs no LaTeX and no extra package.
+  # Returns the path to the generated divider.
+  # ----------------------------------------------------------------------------
+  make_divider_pdf <- function(section_label, file_name) {
+    path <- tempfile(fileext = ".pdf")
+    grDevices::pdf(path, width = 8.27, height = 11.69)  # A4 portrait, inches
+    on.exit(grDevices::dev.off(), add = TRUE)
+    graphics::par(mar = c(0, 0, 0, 0))
+    graphics::plot.new()
+    graphics::text(0.5, 0.60, "Attached document",
+                   cex = 1.5, col = "#666666")
+    # Wrap long section labels so they don't run off the page.
+    wrapped <- paste(strwrap(section_label, width = 42), collapse = "\n")
+    graphics::text(0.5, 0.52, wrapped, cex = 1.9, font = 2)
+    graphics::text(0.5, 0.43, paste0("File: ", file_name),
+                   cex = 1.15, col = "#333333")
+    graphics::text(0.5, 0.38, "Uploaded in the section named above.",
+                   cex = 1.0, col = "#888888")
+    path
   }
 
   # ----------------------------------------------------------------------------
@@ -1921,59 +2065,79 @@ server <- function(input, output, session) {
     out_path
   }
 
-  # ---- Word download ---------------------------------------------------------
-  output$download_pdf <- downloadHandler(
-    filename = function() "Preregistration.docx",
+  # ---- Single download: format follows the chooser next to the button --------
+  output$download_doc <- downloadHandler(
+
+    # Filename is evaluated at click time, so it tracks the chosen format.
+    filename = function() {
+      if (identical(input$output_format, "pdf")) {
+        "Preregistration.pdf"
+      } else {
+        "Preregistration.docx"
+      }
+    },
+
     content = function(file) {
-      withProgress(message = "Generating Word document...", value = 0, {
-        incProgress(0.3, detail = "Rendering")
-        docx_path <- render_prereg("Preregistration.docx", "docx")
-        incProgress(0.6, detail = "Finalizing")
-        file.copy(docx_path, file, overwrite = TRUE)
-      })
-    }
-  )
 
-  # ---- PDF download (prereg + uploaded PDFs merged into one file) ------------
-  output$download_merged_pdf <- downloadHandler(
-    filename = function() "Preregistration.pdf",
-    content = function(file) {
-      withProgress(message = "Generating PDF...", value = 0, {
+      if (identical(input$output_format, "pdf")) {
+        # ---- PDF: render, then merge uploaded PDFs with divider pages --------
+        withProgress(message = "Generating PDF...", value = 0, {
 
-        incProgress(0.2, detail = "Rendering preregistration")
-        prereg_pdf <- render_prereg("Preregistration.pdf", "pdf")
+          incProgress(0.2, detail = "Rendering preregistration")
+          prereg_pdf <- render_prereg("Preregistration.pdf", "pdf")
 
-        incProgress(0.5, detail = "Collecting attachments")
-        attachments <- uploaded_pdf_paths()
+          incProgress(0.5, detail = "Collecting attachments")
+          atts <- uploaded_pdf_paths()
 
-        # The rendered preregistration comes first, then each uploaded PDF.
-        to_merge <- c(prereg_pdf, attachments)
-
-        incProgress(0.7, detail = "Merging into a single PDF")
-        if (length(to_merge) == 1L) {
-          # Nothing uploaded: the preregistration alone is the output.
-          file.copy(prereg_pdf, file, overwrite = TRUE)
-        } else {
-          merged <- file.path(tempdir(), "Preregistration_merged.pdf")
-          ok <- try(
-            qpdf::pdf_combine(input = to_merge, output = merged),
-            silent = FALSE
-          )
-          if (inherits(ok, "try-error") || !file.exists(merged)) {
-            # Fall back to the preregistration on its own rather than failing
-            # the download entirely.
-            showNotification(
-              "Could not merge the uploaded PDFs; downloading the preregistration only. Please check that each upload is a valid PDF.",
-              type = "warning", duration = 8
-            )
+          if (nrow(atts) == 0L) {
+            # Nothing uploaded: the preregistration alone is the output.
             file.copy(prereg_pdf, file, overwrite = TRUE)
           } else {
-            file.copy(merged, file, overwrite = TRUE)
-          }
-        }
+            incProgress(0.7, detail = "Adding attachments")
+            # Interleave a divider page before each attachment:
+            # [prereg, divider_1, attachment_1, divider_2, attachment_2, ...]
+            to_merge <- prereg_pdf
+            for (r in seq_len(nrow(atts))) {
+              divider <- try(
+                make_divider_pdf(atts$section[[r]], atts$name[[r]]),
+                silent = FALSE
+              )
+              if (!inherits(divider, "try-error") && file.exists(divider)) {
+                to_merge <- c(to_merge, divider)
+              }
+              to_merge <- c(to_merge, atts$path[[r]])
+            }
 
-        incProgress(0.9, detail = "Finalizing")
-      })
+            merged <- file.path(tempdir(), "Preregistration_merged.pdf")
+            ok <- try(
+              qpdf::pdf_combine(input = to_merge, output = merged),
+              silent = FALSE
+            )
+            if (inherits(ok, "try-error") || !file.exists(merged)) {
+              showNotification(
+                paste("Could not merge the uploaded PDFs; downloading the",
+                      "preregistration only. Please check that each upload is",
+                      "a valid PDF."),
+                type = "warning", duration = 8
+              )
+              file.copy(prereg_pdf, file, overwrite = TRUE)
+            } else {
+              file.copy(merged, file, overwrite = TRUE)
+            }
+          }
+
+          incProgress(0.9, detail = "Finalizing")
+        })
+
+      } else {
+        # ---- Word: text only -------------------------------------------------
+        withProgress(message = "Generating Word document...", value = 0, {
+          incProgress(0.3, detail = "Rendering")
+          docx_path <- render_prereg("Preregistration.docx", "docx")
+          incProgress(0.6, detail = "Finalizing")
+          file.copy(docx_path, file, overwrite = TRUE)
+        })
+      }
     }
   )
 }

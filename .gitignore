@@ -49,3 +49,20 @@ po/*~
 rsconnect/
 .Rproj.user
 .positai
+
+# shinyapps.io deployment credentials — NEVER commit these
+rsconnect/
+
+# R session cruft
+.Rproj.user/
+.Rhistory
+.RData
+.Ruserdata
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# rendered output that shouldn't be versioned
+*.docx
+*.pdf
