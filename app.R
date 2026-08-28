@@ -142,6 +142,15 @@ ui <- page_fluid(
         z-index: 2;
       }
       
+      .hero-authors {
+        font-size: 14px;
+        line-height: 1.6;
+        margin-top: 10px;
+        color: #CBD5E1;
+        position: relative;
+        z-index: 2;
+      }
+      
       /* TABS */
       .nav-tabs {
           display: flex;
@@ -835,6 +844,11 @@ ui <- page_fluid(
         class = "hero-text",
         
         "This template supports researchers in planning and preregistering data donation studies."
+      ),
+      
+      div(
+        class = "hero-authors",
+        "A project by Hase, V., Kümpel, A., Boeschoten, F., & Keusch, F."
       )
     ),
     
