@@ -101,6 +101,14 @@ ui <- page_fluid(
         background: linear-gradient(135deg, #24578F 0%, #3E7FC7 100%);
       }
       
+      /* SECTION NAV (previous / next) */
+      .section-nav-btn {
+        font-weight: 650;
+        font-size: 15px;
+        padding: 12px 26px;
+        border-radius: 14px !important;
+      }
+      
       .hero-section::before {
         content: '';
         position: absolute;
@@ -815,7 +823,11 @@ ui <- page_fluid(
       /* keep the format chooser flush with the Download button (remove its
          default bottom margin so the two line up on the same baseline) */
       #output_format + .selectize-control { margin-bottom: 0; }
-      .shiny-input-container:has(#output_format) { margin-bottom: 0; }
+      .shiny-input-container:has(#output_format) { margin: 0 !important; }
+      /* The format chooser has label = NULL, but Shiny still renders an empty
+         .control-label, which the global rule above paints as a blue pill.
+         Hide that empty label for this input only. */
+      .shiny-input-container:has(#output_format) > .control-label { display: none; }
       
     "))
   ),
@@ -848,7 +860,7 @@ ui <- page_fluid(
       
       div(
         class = "hero-authors",
-        "A project by Hase, V., Kümpel, A., Boeschoten, F., & Keusch, F."
+        "A project by Hase, V., Kümpel, A. S., Boeschoten, L., & Keusch, F."
       )
     ),
     
@@ -985,6 +997,7 @@ ui <- page_fluid(
       class = "form-view",
       
       navset_tab(
+      id = "main_tabs",
       
       # ==================================================================================
       # METADATA
@@ -1408,50 +1421,73 @@ ui <- page_fluid(
             fileInput("additional_material_file", label = NULL, accept = c(".pdf", "application/pdf"),
                       buttonLabel = "Browse...", placeholder = "No file selected"))
         )
+      ),
+      
+      # ==================================================================================
+      # DOWNLOAD & EXPORT  (own tab, placed after References)
+      # ==================================================================================
+      
+      nav_panel(
+        "Export preregistration",
+        
+        br(),
+        
+        card(
+          
+          card_header("Export preregistration"),
+          
+          div(
+            tags$span(class = "field-hint",
+              paste(
+                "You can now export your preregistration. Choose an output",
+                "format: Word (.docx) includes the text you have entered only.",
+                "PDF (.pdf) includes the same text plus every PDF you uploaded,",
+                "merged into a single file with a divider page before each",
+                "attachment."
+              ))
+          ),
+          
+          div(
+            style = "display:flex; gap:10px; justify-content:flex-start; align-items:flex-end; margin-top:16px;",
+            
+            # Format chooser.
+            div(
+              style = "width:150px; margin:0;",
+              selectInput(
+                "output_format",
+                label = NULL,
+                choices = c("Word (.docx)" = "docx", "PDF (.pdf)" = "pdf"),
+                selected = "docx",
+                width = "100%"
+              )
+            ),
+            
+            # Single download button; its behaviour follows the chooser above.
+            downloadButton(
+              "download_doc",
+              "Download"
+            )
+          )
+        )
       )
     ),
     
     br(),
     
+    # ==================================================================================
+    # SECTION NAVIGATION (previous / next buttons, always visible below the tabs)
+    # ==================================================================================
     div(
-      style = "display:flex; gap:10px; justify-content:right; align-items:center;",
+      class = "section-nav",
+      style = "display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:32px;",
       
-      # Info tooltip: explains what each format includes.
-      bslib::tooltip(
-        span(
-          style = paste(
-            "display:inline-flex; align-items:center; justify-content:center;",
-            "width:20px; height:20px; border-radius:50%;",
-            "border:1px solid #9aa0a6; color:#5f6368; font-size:13px;",
-            "font-style:italic; font-family:Georgia,serif; cursor:help;"
-          ),
-          "i"
-        ),
-        paste(
-          "Word (.docx) includes the text you have entered only.",
-          "PDF (.pdf) includes the same text plus every PDF you uploaded,",
-          "merged into a single file with a divider page before each",
-          "attachment noting the section it belongs to."
-        ),
-        placement = "top"
+      actionButton(
+        "prev_tab", "\u2190 Previous",
+        class = "btn btn-outline-secondary section-nav-btn"
       ),
-      
-      # Format chooser.
-      div(
-        style = "width:150px;",
-        selectInput(
-          "output_format",
-          label = NULL,
-          choices = c("Word (.docx)" = "docx", "PDF (.pdf)" = "pdf"),
-          selected = "docx",
-          width = "100%"
-        )
-      ),
-      
-      # Single download button; its behaviour follows the chooser above.
-      downloadButton(
-        "download_doc",
-        "Download"
+      actionButton(
+        "next_tab", "Next \u2192",
+        class = "btn btn-primary section-nav-btn"
       )
     )
     )
@@ -1463,6 +1499,46 @@ ui <- page_fluid(
 # ==================================================================================
 
 server <- function(input, output, session) {
+
+  # ---- Section navigation (previous / next buttons) ----------------------
+  # Ordered list of tab titles; must match the nav_panel() titles above.
+  tab_order <- c(
+    "Metadata",
+    "Research Questions & Hypotheses",
+    "General Study Design",
+    "Sampling Plan",
+    "Measures: Data Donation",
+    "Measures: Other Data",
+    "Analysis Plan",
+    "References",
+    "Export preregistration"
+  )
+
+  # Move one tab in the given direction (-1 = back, +1 = forward), clamped.
+  move_tab <- function(direction) {
+    current <- input$main_tabs
+    if (is.null(current)) current <- tab_order[[1]]
+    idx <- match(current, tab_order)
+    if (is.na(idx)) idx <- 1L
+    new_idx <- min(max(idx + direction, 1L), length(tab_order))
+    if (new_idx != idx) {
+      nav_select("main_tabs", tab_order[[new_idx]])
+      # Scroll back to the top so the user starts at the head of the new tab.
+      shinyjs::runjs("window.scrollTo(0,0);")
+    }
+  }
+
+  observeEvent(input$prev_tab, move_tab(-1L))
+  observeEvent(input$next_tab, move_tab(+1L))
+
+  # Show/hide the buttons at the ends of the sequence: no "Previous" on the
+  # first tab, no "Next" on the last.
+  observeEvent(input$main_tabs, {
+    idx <- match(input$main_tabs, tab_order)
+    if (is.na(idx)) idx <- 1L
+    shinyjs::toggle("prev_tab", condition = idx > 1L)
+    shinyjs::toggle("next_tab", condition = idx < length(tab_order))
+  }, ignoreInit = FALSE)
 
   # ---- Enforce PDF-only uploads ------------------------------------------
   # The `accept = ".pdf"` argument on each fileInput only filters the browser
