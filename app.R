@@ -699,6 +699,47 @@ ui <- page_fluid(
         background: #F7D4D4;
         color: #8F1F1F;
       }
+      /* Authors: three fields laid out horizontally, one column each */
+      .author-fields {
+        display: flex;
+        gap: 16px;
+        align-items: flex-end;
+        flex-wrap: wrap;
+      }
+      .author-field {
+        flex: 1 1 0;
+        min-width: 180px;
+      }
+      .author-field .shiny-input-container {
+        width: 100% !important;
+        margin-bottom: 0 !important;
+      }
+      /* Shorter author input boxes, uniform across the first and added rows.
+         The global .form-control rule sets min-height:58px and padding with
+         !important, so these must also be !important to take effect. */
+      .author-field input.form-control {
+        min-height: 44px !important;
+        height: 44px !important;
+        padding-top: 6px !important;
+        padding-bottom: 6px !important;
+        line-height: 1.2 !important;
+      }
+      /* Each extra author row sits below the first, with a little breathing room. */
+      .author-extra {
+        margin-top: 16px;
+      }
+      /* Fixed-width Remove column, reserved in every row so the three input
+         fields keep the same width whether or not a Remove button is present. */
+      .author-remove-cell {
+        flex: 0 0 90px;
+        display: flex;
+        align-items: flex-end;
+        justify-content: flex-end;
+        padding-bottom: 2px;
+      }
+      .author-remove-placeholder {
+        visibility: hidden;
+      }
       /* sub-section (preprocessing / transformation) inside a variable block */
       .var-sub {
         border-left: 3px solid #CBE0FF;
@@ -1016,9 +1057,34 @@ ui <- page_fluid(
             "Use an informative title for the study.",
             textInput("title", label = NULL)),
           
-          field("2. Authors & Affiliations",
-            "List all authors and their institutional affiliations. If possible, add ORCID-numbers for identification.",
-            textInput("authors", label = NULL)),
+          div(
+            class = "field-with-hint",
+            div(
+              class = "field-box",
+              tags$span(class = "field-title", "2. Authors & Affiliations"),
+              tags$span(class = "field-hint",
+                "Add each author separately, giving their name, ORCID (optional), and institutional affiliation (optional).")
+            ),
+            # First author: always visible.
+            div(
+              class = "author-fields",
+              div(class = "author-field",
+                  textInput("author_name_1", label = "Name",
+                            placeholder = "First Name Last Name")),
+              div(class = "author-field",
+                  textInput("author_orcid_1", label = "ORCID (optional)",
+                            placeholder = "e.g., https://orcid.org/0000-0001-6656-4894")),
+              div(class = "author-field",
+                  textInput("author_affiliation_1", label = "Affiliation (optional)",
+                            placeholder = "University")),
+              # Empty placeholder matching the Remove-button column on extra
+              # rows, so the first row's fields have the same width.
+              div(class = "author-remove-cell author-remove-placeholder")
+            ),
+            # Any additional authors appear here.
+            uiOutput("extra_authors_ui"),
+            actionButton("add_author", "+ Add more authors", class = "add-var-btn")
+          ),
           
           field("3. Date of Preregistration",
             "Add the date this preregistration was created (auto-generated to be the current date).",
@@ -1583,6 +1649,79 @@ server <- function(input, output, session) {
     }, ignoreInit = TRUE)
   })
 
+  # ---- Authors: first author is static UI (ids ..._1); this handles the
+  # optional EXTRA authors (ids 2, 3, ...). extra_author_ids holds the ids
+  # currently shown; ids are issued once and never reused.
+  extra_author_ids <- reactiveVal(integer(0))   # none to start
+  author_counter   <- reactiveVal(1L)           # id 1 belongs to the static row
+  author_removers  <- reactiveVal(integer(0))
+
+  # Preserve a typed value across re-renders ("" if never set).
+  keep_author <- function(id) {
+    v <- isolate(input[[id]])
+    if (is.null(v)) "" else v
+  }
+
+  output$extra_authors_ui <- renderUI({
+    ids <- extra_author_ids()
+    if (!length(ids)) return(NULL)
+    blocks <- lapply(ids, function(id) {
+      name_id        <- paste0("author_name_", id)
+      orcid_id       <- paste0("author_orcid_", id)
+      affiliation_id <- paste0("author_affiliation_", id)
+      remove_id      <- paste0("remove_author_", id)
+
+      div(
+        class = "author-extra",
+        div(
+          class = "author-fields",
+          div(class = "author-field",
+              textInput(name_id, label = "Name",
+                        value = keep_author(name_id),
+                        placeholder = "First Name Last Name")),
+          div(class = "author-field",
+              textInput(orcid_id, label = "ORCID (optional)",
+                        value = keep_author(orcid_id),
+                        placeholder = "e.g., https://orcid.org/0000-0001-6656-4894")),
+          div(class = "author-field",
+              textInput(affiliation_id, label = "Affiliation (optional)",
+                        value = keep_author(affiliation_id),
+                        placeholder = "University")),
+          div(class = "author-remove-cell",
+              actionButton(remove_id, "Remove", class = "var-remove-btn"))
+        )
+      )
+    })
+    do.call(tagList, blocks)
+  })
+  # This output starts empty (NULL) and lives inside a tab; without this it can
+  # be suspended and never re-evaluate when extra_author_ids() changes, making
+  # "Add more authors" appear to do nothing.
+  outputOptions(output, "extra_authors_ui", suspendWhenHidden = FALSE)
+
+  # Add a new author row.
+  observeEvent(input$add_author, {
+    new_id <- author_counter() + 1L
+    author_counter(new_id)
+    extra_author_ids(c(extra_author_ids(), new_id))
+  })
+
+  # Lazily register a remove-observer for each extra id.
+  observe({
+    ids  <- extra_author_ids()
+    have <- author_removers()
+    todo <- setdiff(ids, have)
+    for (id in todo) {
+      local({
+        this_id <- id
+        observeEvent(input[[paste0("remove_author_", this_id)]], {
+          extra_author_ids(setdiff(extra_author_ids(), this_id))
+        }, ignoreInit = TRUE)
+      })
+    }
+    if (length(todo)) author_removers(union(have, todo))
+  })
+
   # ---- Collected Variables: repeatable variable blocks ----
   # Each block has a stable integer id used to build unique input ids
   # (var_name_<id>, var_preprocess_<id>, var_transform_<id>). Ids are never
@@ -1960,6 +2099,39 @@ server <- function(input, output, session) {
       v <- params[[id]]
       if (is.null(v)) "" else trimws(v)
     }
+
+    # Authors: assemble all author rows (the static first row, id 1, plus any
+    # extra rows) into a single formatted string passed as `authors`, so the
+    # Quarto template is unchanged. Each author becomes one line:
+    # "Name (ORCID: ...), Affiliation", with the optional parts dropped when empty.
+    all_author_ids <- c(1L, extra_author_ids())
+    author_chunks <- lapply(all_author_ids, function(id) {
+      nm <- var_val(paste0("author_name_", id))
+      oc <- var_val(paste0("author_orcid_", id))
+      af <- var_val(paste0("author_affiliation_", id))
+      if (nm == "" && oc == "" && af == "") return(NULL)
+      # Normalise ORCID to the full canonical URL regardless of what was typed
+      # (bare id, "orcid.org/..", or a full http/https URL).
+      if (oc != "") {
+        bare <- sub("^\\s*https?://orcid\\.org/", "", oc, ignore.case = TRUE)
+        bare <- sub("^\\s*orcid\\.org/", "", bare, ignore.case = TRUE)
+        bare <- trimws(gsub("/+$", "", bare))
+        oc <- paste0("https://orcid.org/", bare)
+      }
+      line <- if (nm == "") "(unnamed)" else nm
+      if (oc != "") line <- paste0(line, " (ORCID: ", oc, ")")
+      if (af != "") line <- paste0(line, ", ", af)
+      line
+    })
+    author_chunks <- Filter(Negate(is.null), author_chunks)
+    params$authors <- if (length(author_chunks)) {
+      paste(unlist(author_chunks), collapse = "\n")
+    } else {
+      ""
+    }
+    raw_author_keys <- grep("^(author_name_|author_orcid_|author_affiliation_|remove_author_)",
+                            names(params), value = TRUE)
+    params[c(raw_author_keys, "add_author")] <- NULL
 
     # Collected Variables: assemble the repeatable blocks into a single
     # formatted string passed as `collected_variables`.
