@@ -1,0 +1,597 @@
+---
+title: "Preregistration Data Donation Template"
+format:
+  pdf:
+    toc: true
+    toc-depth: 2
+
+    number-sections: false
+
+    colorlinks: false
+
+    geometry:
+      - margin=1in
+
+    fontsize: 11pt
+
+    documentclass: scrartcl
+
+    papersize: a4
+
+    titlepage: true
+
+    include-in-header:
+      text: |
+        \usepackage{xcolor}
+        \definecolor{black}{HTML}{2B6CB0}
+
+        \usepackage{titlesec}
+
+        \titleformat{\section}
+        {\Large\bfseries\color{black}}
+        {\thesection}
+        {1em}
+        {}
+
+        \titleformat{\subsection}
+        {\large\bfseries}
+        {}
+        {0em}
+        {}
+
+        \usepackage{tcolorbox}
+
+        \tcbset{
+          colback=black!2,
+          colframe=black!25,
+          arc=3mm
+        }
+         \usepackage{etoolbox}
+
+        \makeatletter
+        \patchcmd{\tableofcontents}
+          {\endgroup}
+          {\endgroup\clearpage}
+          {}{}
+        \makeatother
+
+  
+params:
+  # METADATA
+  title: ""
+  authors: ""
+  date: ""
+  version_identifier: ""
+  license: ""
+  keywords: ""
+  funding: ""
+  ethics: ""
+
+  # STUDY OVERVIEW
+  background: ""
+  objectives: ""
+  hypotheses: ""
+  exploratory_questions: ""
+  ddp_justification: ""
+
+  # DATA SOURCES
+  platform_tool: ""
+  access_method: ""
+  dataset_description: ""
+  download_dates: ""
+  availability: ""
+  prior_knowledge: ""
+  codebook: ""
+  collection_procedures: ""
+  privacy_security: ""
+
+  # SAMPLING
+  population: ""
+  recruitment: ""
+  sample_size: ""
+  stopping_rule: ""
+  representativeness: ""
+
+  # DATA STRUCTURE
+  raw_data_structure: ""
+  data_cleaning: ""
+  feature_extraction: ""
+  assumptions: ""
+  missing_data: ""
+
+  # STUDY DESIGN
+  study_type: ""
+  blinding: ""
+  design_description: ""
+  conditions: ""
+  randomization: ""
+
+  # MEASUREMENTS
+  independent_variables: ""
+  dependent_variables: ""
+  control_variables: ""
+  derived_variables: ""
+  platform_indicators: ""
+
+  # ANALYSIS
+  primary_analyses: ""
+  secondary_analyses: ""
+  inference_criteria: ""
+  modeling_parameters: ""
+  performance_measures: ""
+  software_packages: ""
+  reproducibility: ""
+
+  # RISKS
+  participant_risks: ""
+  risk_mitigation: ""
+  ethical_justification: ""
+
+  # OPEN SCIENCE
+  data_sharing: ""
+  code_sharing: ""
+  pipeline_documentation: ""
+  update_policy: ""
+
+  # REFERENCES
+  citations: ""
+  appendices: ""
+---
+
+```{r}
+#| include: false
+
+render_text <- function(x, width = 80) {
+
+  if (is.null(x) || x == "") return(invisible())
+
+  cat(
+    strwrap(
+      x,
+      width = width
+    ),
+    sep = "\n"
+  )
+}
+```
+
+
+# Metadata:
+
+## Title:
+
+```{r}
+#| echo: false
+  render_text(params$title)
+```
+
+## Authors & Affiliations:
+
+```{r}
+#| echo: false
+render_text(params$authors)
+```
+
+## Date of Preregistration:
+
+```{r}
+#| echo: false 
+cat(format(as.Date(params$date), "%B %d, %Y"))
+```
+
+## Version identifier
+
+```{r}
+#| echo: false
+render_text(params$version_identifier)
+```
+
+## License (choose from the OSF license list)
+
+```{r}
+#| echo: false
+
+render_text(params$license)
+
+```
+
+## Keywords
+
+```{r}
+#| echo: false
+render_text(params$keywords)
+```
+
+## Funding
+
+```{r}
+#| echo: false
+render_text(params$funding)
+```
+
+## Ethics
+
+```{r}
+#| echo: false
+render_text(params$ethics)
+```
+
+\clearpage
+# Study Overview
+
+## Background
+
+```{r}
+#| echo: false
+render_text(params$background)
+```
+
+## Objectives
+
+```{r}
+#| echo: false
+render_text(params$objectives)
+```
+
+## Hypotheses
+
+```{r}
+#| echo: false
+render_text(params$hypotheses)
+```
+
+## Exploratory Questions
+
+```{r}
+#| echo: false
+render_text(params$exploratory_questions)
+```
+
+## DDP Justification
+
+```{r}
+#| echo: false
+render_text(params$ddp_justification)
+```
+
+\clearpage
+# Data sources
+
+## Platform Tools
+
+```{r}
+#| echo: false
+render_text(params$platform_tool)
+```
+
+## Access Method
+
+```{r}
+#| echo: false
+render_text(params$access_method)
+```
+
+## Dataset Description
+
+```{r}
+#| echo: false
+render_text(params$dataset_description)
+```
+
+## Download Dates
+
+```{r}
+#| echo: false
+render_text(params$download_dates)
+```
+
+## Availability
+
+```{r}
+#| echo: false
+render_text(params$availability)
+```
+
+## Prior Knowledge
+
+```{r}
+#| echo: false
+render_text(params$prior_knowledge)
+```
+
+## Codebook
+
+```{r}
+#| echo: false
+render_text(params$codebook)
+```
+
+## Collection Procedures
+
+```{r}
+#| echo: false
+render_text(params$collection_procedures)
+```
+
+## Privacy Security
+
+```{r}
+#| echo: false
+render_text(params$privacy_security)
+```
+
+\clearpage
+# Sampling
+
+## Population
+
+```{r}
+#| echo: false
+render_text(params$population)
+```
+
+## Recruitment
+
+```{r}
+#| echo: false
+render_text(params$recruitment)
+```
+
+## Sample Size
+
+```{r}
+#| echo: false
+render_text(params$sample_size)
+```
+
+## Stopping Rule
+
+```{r}
+#| echo: false
+render_text(params$stopping_rule)
+```
+
+## Representativeness
+
+```{r}
+#| echo: false
+render_text(params$representativeness)
+```
+
+\clearpage
+# Data Structure
+
+## Raw Data Structure
+
+```{r}
+#| echo: false
+render_text(params$raw_data_structure)
+```
+
+## Data Cleaning
+
+```{r}
+#| echo: false
+render_text(params$data_cleaning)
+```
+
+## Feature Extraction
+
+```{r}
+#| echo: false
+render_text(params$feature_extraction)
+```
+
+## Assumptions
+
+```{r}
+#| echo: false
+render_text(params$assumptions)
+```
+
+## Missing Data
+
+```{r}
+#| echo: false
+render_text(params$missing_data)
+```
+
+\clearpage
+# Study Design
+
+## Study Type
+
+```{r}
+#| echo: false
+render_text(params$study_type)
+```
+
+## Blinding
+
+```{r}
+#| echo: false
+render_text(params$blinding)
+```
+
+## Design Description
+
+```{r}
+#| echo: false
+render_text(params$design_description)
+```
+
+## Conditions
+
+```{r}
+#| echo: false
+render_text(params$conditions)
+```
+
+## Randomization
+
+```{r}
+#| echo: false
+render_text(params$randomization)
+```
+
+\clearpage
+# Measurements
+
+## Independent Variables
+
+```{r}
+#| echo: false
+render_text(params$independent_variables)
+```
+
+## Dependent Variables
+
+```{r}
+#| echo: false
+render_text(params$dependent_variables)
+```
+
+## Control Variables
+
+```{r}
+#| echo: false
+render_text(params$control_variables)
+```
+
+## Derived Variables
+
+```{r}
+#| echo: false
+render_text(params$derived_variables)
+```
+
+## Platform Indicators
+
+```{r}
+#| echo: false
+render_text(params$platform_indicators)
+```
+
+\clearpage
+# Analysis
+
+## Primary Analyses
+
+```{r}
+#| echo: false
+render_text(params$primary_analyses)
+```
+
+## Secondary Analyses
+
+```{r}
+#| echo: false
+render_text(params$secondary_analyses)
+```
+
+## Inference Criteria
+
+```{r}
+#| echo: false
+render_text(params$inference_criteria)
+```
+
+## Modeling Parameters
+
+```{r}
+#| echo: false
+render_text(params$modeling_parameters)
+```
+
+## Performance Measures
+
+```{r}
+#| echo: false
+render_text(params$performance_measures)
+```
+
+## Software Packages
+
+```{r}
+#| echo: false
+render_text(params$software_packages)
+```
+
+## Reproducibility
+
+```{r}
+#| echo: false
+render_text(params$reproducibility)
+```
+
+\clearpage
+# Risks
+
+## Participant Risks
+
+```{r}
+#| echo: false
+render_text(params$participant_risks)
+```
+
+## Risk Mitigation
+
+```{r}
+#| echo: false
+render_text(params$risk_mitigation)
+```
+
+## Ethical Justification
+
+```{r}
+#| echo: false
+render_text(params$ethical_justification)
+```
+
+\clearpage
+# Open Science
+
+## Data Sharing
+
+```{r}
+#| echo: false
+render_text(params$data_sharing)
+```
+
+## Code Sharing
+
+```{r}
+#| echo: false
+render_text(params$code_sharing)
+```
+
+## Pipeline documentation
+
+```{r}
+#| echo: false
+render_text(params$pipeline_documentation)
+```
+
+## Update Policy
+
+```{r}
+#| echo: false
+render_text(params$update_policy)
+```
+
+\clearpage
+# References
+
+## Citations
+
+```{r}
+#| echo: false
+render_text(params$citations)
+```
+
+## Appendices
+
+```{r}
+#| echo: false
+render_text(params$appendices)
+```

@@ -1,0 +1,1 @@
+It should give you the prompt of what you are missing and need to install when you try to "Run App", the execution is far from good but at some functionality is implemented
