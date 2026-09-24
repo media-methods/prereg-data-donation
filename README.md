@@ -11,7 +11,7 @@ This repository contains the complete analysis pipeline for the preregistration 
 │   ├── survey/          # data from quantitative survey
 └── scripts/             # analysis pipeline via subscripts
 ```
-The workflow follows a linear, script-based pipeline with clearly defined inputs and outputs. To run the full pipeline, open the R project to execute the main script:
+The workflow follows a linear, script-based pipeline with clearly defined inputs and outputs. To run the full pipeline, open the R project *Open-Science.Rproj* to execute the main script:
 
 ```r
 source("main.R")

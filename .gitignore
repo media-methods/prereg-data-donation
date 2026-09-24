@@ -68,4 +68,5 @@ Thumbs.db
 *.pdf
 
 #ignore specific files
-data/
+data/interviews/
+data/survey/
