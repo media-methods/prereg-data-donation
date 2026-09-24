@@ -66,3 +66,7 @@ Thumbs.db
 # rendered output that shouldn't be versioned
 *.docx
 *.pdf
+
+#ignore specific files
+interviews/
+Survey/
