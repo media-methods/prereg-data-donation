@@ -215,5 +215,9 @@ survey <- survey |>
 # 01.5 Changing type for analysis ----------------------------------------------------------------
 
 survey <- survey |>
+  # change logical to numeric values
   mutate(across(where(is.logical), as.numeric)) |>
+  # -9 is set to NA, as per sosci conversion
+  mutate(across(where(is.numeric), ~ na_if(.x, -9))) |>
+  # needs to be tibble for tidyverse style analysis
   as_tibble()
