@@ -212,3 +212,8 @@ survey <- survey %>%
     problem_storage_open = TE07_07,
     ideas = TE04_01
   )
+
+# 01.5 Changing type for analysis ----------------------------------------------------------------
+
+survey <- survey |>
+  mutate(across(where(is.logical), as.numeric))
