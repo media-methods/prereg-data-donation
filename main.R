@@ -7,6 +7,9 @@
 library(tidyverse)
 library(here)
 library(styler)
+library(systemfonts)
+
+windowsFonts(Candara = windowsFont("Candara"))
 
 # 01 Importing survey data ----------------------------------------------------------------
 
@@ -26,6 +29,18 @@ range(survey$date_start, na.rm = TRUE)
 ## 02.2 Engagement with open science practices  ----------------------------------------------------------------
 
 # % of participants who ever engaged in open_science practices
+
+# labels for the experience items
+exp_labels <- c(
+  exp_prereg         = "Preregistration/registered report",
+  exp_share_code     = "Shared code",
+  exp_share_data     = "Shared data",
+  exp_share_material = "Shared materials",
+  exp_replication    = "Replicated study",
+  exp_open_access    = "Open-Access format",
+  exp_other          = "Other practices"
+)
+
 survey |>
   select(exp_prereg:exp_other) |>
   summarise(across(everything(),
@@ -36,7 +51,21 @@ survey |>
                    .names = "{.col}__{.fn}")) |>
   pivot_longer(everything(),
                names_to = c("variable", ".value"),
-               names_sep = "__")
+               names_sep = "__") |>
+  mutate(label = exp_labels[variable]) |>
+  
+  ggplot(aes(x = pct1, y = reorder(label, pct1))) +
+  geom_col(fill = "#346C83") +
+  geom_text(aes(label = paste0(pct1, "%")),
+            hjust = -0.15, size = 3.5, color = "#333333",
+            family = "Candara") +
+  scale_x_continuous(limits = c(0, 100), expand = expansion(mult = c(0, 0.12))) +
+  labs(x = NULL, y = NULL,
+       title = NULL) +
+  theme_minimal(base_size = 12, base_family = "Candara") +
+  theme(panel.grid.major.y = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.text.x = element_blank())
 
 # Plus other, open responses for other open science practices
 survey |>
@@ -45,7 +74,18 @@ survey |>
 
 ## 02.3 Reasons to not preregister  ----------------------------------------------------------------
 
-# % of reasons for why no preregistration was done
+# labels for the reason items
+prereg_labels <- c(
+  prereg_not_thought    = "Did not think about it",
+  prereg_unsure_how     = "Unsure what to include",
+  prereg_effort         = "Too much effort",
+  prereg_uncertainty    = "Too many uncertainties/deviations",
+  prereg_not_flexible   = "Would have lowered flexibility",
+  prereg_incentive      = "Lacked incentives",
+  prereg_not_applicable = "Not applicable to my study",
+  prereg_other          = "Other reason"
+)
+
 survey |>
   select(prereg_not_thought:prereg_other) |>
   summarise(across(everything(),
@@ -56,7 +96,22 @@ survey |>
                    .names = "{.col}__{.fn}")) |>
   pivot_longer(everything(),
                names_to = c("variable", ".value"),
-               names_sep = "__")
+               names_sep = "__") |>
+  mutate(label = prereg_labels[variable]) |>
+  ggplot(aes(x = pct1, y = reorder(label, pct1))) +
+  geom_col(fill = "#346C83") +
+  geom_text(aes(label = paste0(pct1, "%")),
+            hjust = -0.15, size = 3.5, color = "#333333",
+            family = "Candara") +
+  scale_x_continuous(limits = c(0, 100), expand = expansion(mult = c(0, 0.12))) +
+  labs(x = NULL, y = NULL,
+       title = "Reasons for not preregistering") +
+  theme_minimal(base_size = 12, base_family = "Candara") +
+  theme(panel.grid.major.y = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.grid.major.x = element_blank(),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank())
 
 # Plus other, open responses for why preregistration was not done
 survey |>
@@ -72,6 +127,43 @@ survey |>
   
   #reduce to relevant output
   select(Variable, N, Missing, M, SD)
+
+#visualize seperately
+include_labels <- c(
+  include_design   = "Study information\n& design",
+  include_rq       = "Research\nquestions",
+  include_sampling = "Sampling",
+  include_data     = "Data\nextraction",
+  include_measures = "Measurement\ncreation",
+  include_analysis = "Analysis",
+  include_storage  = "Data use/\nstorage"
+)
+
+# visualize
+survey |>
+  select(include_design:include_storage) |>
+  pivot_longer(everything(), names_to = "variable", values_to = "value") |>
+  group_by(variable) |>
+  summarise(M = mean(value, na.rm = TRUE),
+            SD = sd(value, na.rm = TRUE),
+            n = sum(!is.na(value)), .groups = "drop") |>
+  mutate(label = include_labels[variable],
+         label = fct_reorder(label, M, .desc = TRUE)) |>
+  ggplot(aes(x = label, y = M)) +
+  geom_col(fill = "#346C83", width = 0.7) +
+  geom_errorbar(aes(ymin = M - SD, ymax = M + SD),
+                width = 0.2, color = "#333333") +
+  geom_text(aes(y = M + SD, label = sprintf("%.2f", M)),
+            vjust = -0.6, size = 3.3, color = "#333333",
+            family = "Candara") +
+  scale_y_continuous(limits = c(0, 6), breaks = 0:5,
+                     expand = expansion(mult = c(0, 0.02))) +
+  labs(x = NULL, y = "Mean importance (1–5)",
+       title = "Importance of preregistration elements") +
+  theme_minimal(base_size = 12, base_family = "Candara") +
+  theme(panel.grid.major.x = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.text.x = element_text(size = 10))
   
 # Plus other, open responses for which elements should be included
 survey |>
@@ -81,6 +173,17 @@ survey |>
 ## 02.5 For which preregistration steps participants expect problems  ----------------------------------------------------------------
 
 # % of steps where participant expect problems
+problem_labels <- c(
+  problem_design   = "Study information & design",
+  problem_rq       = "Research questions",
+  problem_sampling = "Sampling",
+  problem_data     = "Data extraction",
+  problem_measures = "Measurement creation",
+  problem_analysis = "Analysis",
+  problem_storage  = "Data use/storage",
+  problem_other    = "Other steps"
+)
+
 survey |>
   select(problem_design:problem_other) |>
   summarise(across(everything(),
@@ -91,8 +194,22 @@ survey |>
                    .names = "{.col}__{.fn}")) |>
   pivot_longer(everything(),
                names_to = c("variable", ".value"),
-               names_sep = "__")
-
+               names_sep = "__") |>
+  mutate(label = problem_labels[variable]) |>
+  ggplot(aes(x = pct1, y = reorder(label, pct1))) +
+  geom_col(fill = "#346C83") +
+  geom_text(aes(label = paste0(pct1, "%")),
+            hjust = -0.15, size = 3.5, color = "#333333",
+            family = "Candara") +
+  scale_x_continuous(limits = c(0, 100), expand = expansion(mult = c(0, 0.12))) +
+  labs(x = NULL, y = NULL,
+       title = "Steps where participants expect problems") +
+  theme_minimal(base_size = 12, base_family = "Candara") +
+  theme(panel.grid.major.y = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.grid.major.x = element_blank(),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank())
 #no open responses here, so skipped
 
 ## 02.6 Which problems they expect  ----------------------------------------------------------------
