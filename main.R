@@ -13,7 +13,7 @@ windowsFonts(Candara = windowsFont("Candara"))
 
 # 01 Importing survey data ----------------------------------------------------------------
 
-#run script to import survey data
+# run script to import survey data
 source(paste0(here(), "/scripts/01_load_survey.r"))
 
 # 02 Analyze survey data ----------------------------------------------------------------
@@ -44,28 +44,34 @@ exp_labels <- c(
 survey |>
   select(exp_prereg:exp_other) |>
   summarise(across(everything(),
-                   list(
-                     pct1 = ~ round(100 * mean(.x == 1, na.rm = TRUE), 1),
-                     n    = ~ sum(!is.na(.x))
-                   ),
-                   .names = "{.col}__{.fn}")) |>
+    list(
+      pct1 = ~ round(100 * mean(.x == 1, na.rm = TRUE), 1),
+      n    = ~ sum(!is.na(.x))
+    ),
+    .names = "{.col}__{.fn}"
+  )) |>
   pivot_longer(everything(),
-               names_to = c("variable", ".value"),
-               names_sep = "__") |>
+    names_to = c("variable", ".value"),
+    names_sep = "__"
+  ) |>
   mutate(label = exp_labels[variable]) |>
-  
   ggplot(aes(x = pct1, y = reorder(label, pct1))) +
   geom_col(fill = "#346C83") +
   geom_text(aes(label = paste0(pct1, "%")),
-            hjust = -0.15, size = 3.5, color = "#333333",
-            family = "Candara") +
+    hjust = -0.15, size = 3.5, color = "#333333",
+    family = "Candara"
+  ) +
   scale_x_continuous(limits = c(0, 100), expand = expansion(mult = c(0, 0.12))) +
-  labs(x = NULL, y = NULL,
-       title = NULL) +
+  labs(
+    x = NULL, y = NULL,
+    title = NULL
+  ) +
   theme_minimal(base_size = 12, base_family = "Candara") +
-  theme(panel.grid.major.y = element_blank(),
-        panel.grid.minor = element_blank(),
-        axis.text.x = element_blank())
+  theme(
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.text.x = element_blank()
+  )
 
 # Plus other, open responses for other open science practices
 survey |>
@@ -89,29 +95,36 @@ prereg_labels <- c(
 survey |>
   select(prereg_not_thought:prereg_other) |>
   summarise(across(everything(),
-                   list(
-                     pct1 = ~ round(100 * mean(.x == 1, na.rm = TRUE), 1),
-                     n    = ~ sum(!is.na(.x))
-                   ),
-                   .names = "{.col}__{.fn}")) |>
+    list(
+      pct1 = ~ round(100 * mean(.x == 1, na.rm = TRUE), 1),
+      n    = ~ sum(!is.na(.x))
+    ),
+    .names = "{.col}__{.fn}"
+  )) |>
   pivot_longer(everything(),
-               names_to = c("variable", ".value"),
-               names_sep = "__") |>
+    names_to = c("variable", ".value"),
+    names_sep = "__"
+  ) |>
   mutate(label = prereg_labels[variable]) |>
   ggplot(aes(x = pct1, y = reorder(label, pct1))) +
   geom_col(fill = "#346C83") +
   geom_text(aes(label = paste0(pct1, "%")),
-            hjust = -0.15, size = 3.5, color = "#333333",
-            family = "Candara") +
+    hjust = -0.15, size = 3.5, color = "#333333",
+    family = "Candara"
+  ) +
   scale_x_continuous(limits = c(0, 100), expand = expansion(mult = c(0, 0.12))) +
-  labs(x = NULL, y = NULL,
-       title = "Reasons for not preregistering") +
+  labs(
+    x = NULL, y = NULL,
+    title = "Reasons for not preregistering"
+  ) +
   theme_minimal(base_size = 12, base_family = "Candara") +
-  theme(panel.grid.major.y = element_blank(),
-        panel.grid.minor = element_blank(),
-        panel.grid.major.x = element_blank(),
-        axis.text.x = element_blank(),
-        axis.ticks.x = element_blank())
+  theme(
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.grid.major.x = element_blank(),
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank()
+  )
 
 # Plus other, open responses for why preregistration was not done
 survey |>
@@ -122,13 +135,14 @@ survey |>
 
 # % of elements that should be included in preregistration
 survey |>
-  describe(include_design, include_rq, include_sampling, include_data,
-           include_measures, include_analysis, include_storage)|>
-  
-  #reduce to relevant output
+  describe(
+    include_design, include_rq, include_sampling, include_data,
+    include_measures, include_analysis, include_storage
+  ) |>
+  # reduce to relevant output
   select(Variable, N, Missing, M, SD)
 
-#visualize seperately
+# visualize seperately
 include_labels <- c(
   include_design   = "Study information\n& design",
   include_rq       = "Research\nquestions",
@@ -144,27 +158,39 @@ survey |>
   select(include_design:include_storage) |>
   pivot_longer(everything(), names_to = "variable", values_to = "value") |>
   group_by(variable) |>
-  summarise(M = mean(value, na.rm = TRUE),
-            SD = sd(value, na.rm = TRUE),
-            n = sum(!is.na(value)), .groups = "drop") |>
-  mutate(label = include_labels[variable],
-         label = fct_reorder(label, M, .desc = TRUE)) |>
+  summarise(
+    M = mean(value, na.rm = TRUE),
+    SD = sd(value, na.rm = TRUE),
+    n = sum(!is.na(value)), .groups = "drop"
+  ) |>
+  mutate(
+    label = include_labels[variable],
+    label = fct_reorder(label, M, .desc = TRUE)
+  ) |>
   ggplot(aes(x = label, y = M)) +
   geom_col(fill = "#346C83", width = 0.7) +
   geom_errorbar(aes(ymin = M - SD, ymax = M + SD),
-                width = 0.2, color = "#333333") +
+    width = 0.2, color = "#333333"
+  ) +
   geom_text(aes(y = M + SD, label = sprintf("%.2f", M)),
-            vjust = -0.6, size = 3.3, color = "#333333",
-            family = "Candara") +
-  scale_y_continuous(limits = c(0, 6), breaks = 0:5,
-                     expand = expansion(mult = c(0, 0.02))) +
-  labs(x = NULL, y = "Mean importance (1–5)",
-       title = "Importance of preregistration elements") +
+    vjust = -0.6, size = 3.3, color = "#333333",
+    family = "Candara"
+  ) +
+  scale_y_continuous(
+    limits = c(0, 6), breaks = 0:5,
+    expand = expansion(mult = c(0, 0.02))
+  ) +
+  labs(
+    x = NULL, y = "Mean importance (1–5)",
+    title = "Importance of preregistration elements"
+  ) +
   theme_minimal(base_size = 12, base_family = "Candara") +
-  theme(panel.grid.major.x = element_blank(),
-        panel.grid.minor = element_blank(),
-        axis.text.x = element_text(size = 10))
-  
+  theme(
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.text.x = element_text(size = 10)
+  )
+
 # Plus other, open responses for which elements should be included
 survey |>
   filter(!is.na(include_other_open)) |>
@@ -187,61 +213,69 @@ problem_labels <- c(
 survey |>
   select(problem_design:problem_other) |>
   summarise(across(everything(),
-                   list(
-                     pct1 = ~ round(100 * mean(.x == 1, na.rm = TRUE), 1),
-                     n    = ~ sum(!is.na(.x))
-                   ),
-                   .names = "{.col}__{.fn}")) |>
+    list(
+      pct1 = ~ round(100 * mean(.x == 1, na.rm = TRUE), 1),
+      n    = ~ sum(!is.na(.x))
+    ),
+    .names = "{.col}__{.fn}"
+  )) |>
   pivot_longer(everything(),
-               names_to = c("variable", ".value"),
-               names_sep = "__") |>
+    names_to = c("variable", ".value"),
+    names_sep = "__"
+  ) |>
   mutate(label = problem_labels[variable]) |>
   ggplot(aes(x = pct1, y = reorder(label, pct1))) +
   geom_col(fill = "#346C83") +
   geom_text(aes(label = paste0(pct1, "%")),
-            hjust = -0.15, size = 3.5, color = "#333333",
-            family = "Candara") +
+    hjust = -0.15, size = 3.5, color = "#333333",
+    family = "Candara"
+  ) +
   scale_x_continuous(limits = c(0, 100), expand = expansion(mult = c(0, 0.12))) +
-  labs(x = NULL, y = NULL,
-       title = "Steps where participants expect problems") +
+  labs(
+    x = NULL, y = NULL,
+    title = "Steps where participants expect problems"
+  ) +
   theme_minimal(base_size = 12, base_family = "Candara") +
-  theme(panel.grid.major.y = element_blank(),
-        panel.grid.minor = element_blank(),
-        panel.grid.major.x = element_blank(),
-        axis.text.x = element_blank(),
-        axis.ticks.x = element_blank())
-#no open responses here, so skipped
+  theme(
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.grid.major.x = element_blank(),
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank()
+  )
+
+# no open responses here, so skipped
 
 ## 02.6 Which problems they expect  ----------------------------------------------------------------
 
-#design: not mentioned, thus skipped
+# design: not mentioned, thus skipped
 
 # research questions and hypotheses
 survey |>
   filter(!is.na(problem_rq_open)) |>
   pull(problem_rq_open)
 
-#sampling
+# sampling
 survey |>
   filter(!is.na(problem_sampling_open)) |>
   pull(problem_sampling_open)
 
-#data
+# data
 survey |>
   filter(!is.na(problem_data_open)) |>
   pull(problem_data_open)
 
-#measures
+# measures
 survey |>
   filter(!is.na(problem_measures_open)) |>
   pull(problem_measures_open)
 
-#analysis
+# analysis
 survey |>
   filter(!is.na(problem_analysis_open)) |>
   pull(problem_analysis_open)
 
-#storage
+# storage
 survey |>
   filter(!is.na(problem_storage_open)) |>
   pull(problem_storage_open)
