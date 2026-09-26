@@ -166,7 +166,7 @@ rm(ds)
 
 # 01.4 Adding clearer variable names ----------------------------------------------------------------
 
-survey <- survey %>%
+survey <- survey |>
   rename(
     case = CASE,
     date_start = STARTED,
@@ -179,13 +179,13 @@ survey <- survey %>%
     exp_other = DD02_07,
     exp_other_open = DD02_07a,
     prereg_not_thought = DD03_01,
-    preg_unsure_how = DD03_02,
-    preg_effort = DD03_03,
-    preg_uncertainty = DD03_04,
-    preg_not_flexible = DD03_05,
-    preg_incentive = DD03_06,
-    preg_not_applicable = DD03_07,
-    preg_other = DD03_08,
+    prereg_unsure_how = DD03_02,
+    prereg_effort = DD03_03,
+    prereg_uncertainty = DD03_04,
+    prereg_not_flexible = DD03_05,
+    prereg_incentive = DD03_06,
+    prereg_not_applicable = DD03_07,
+    prereg_other = DD03_08,
     prereg_other_open = DD03_08a,
     include_design = TE02_01,
     include_rq = TE02_02,
