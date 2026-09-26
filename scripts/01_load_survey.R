@@ -152,17 +152,16 @@ comment(ds$TIME_RSI) <- "Completion Speed (relative)"
 
 # 01.3 Reducing cases/variables  ----------------------------------------------------------------
 
-#Reduce to relevant cases
+# Reduce to relevant cases
 survey <- ds |>
-  
-  # only those who gave consent (LP14) & ever conducted a data donation study (DD01) & finished survey 
+  # only those who gave consent (LP14) & ever conducted a data donation study (DD01) & finished survey
   filter(LP14 == "Yes" & DD01 == "Yes" & STATUS == "complete")
 
 # Reduce to relevant variables
 survey <- survey |>
   select(CASE, STARTED, DD02_01:DD02_07a, DD03_01:TE06_07, TE03_01:TE04_01, -LP14)
 
-#clean house
+# clean house
 rm(ds)
 
 # 01.4 Adding clearer variable names ----------------------------------------------------------------
@@ -204,7 +203,7 @@ survey <- survey %>%
     problem_analysis = TE03_06,
     problem_storage = TE03_07,
     problem_other = TE03_08,
-    problem_rq_open = TE07_02, #important: TE07_01 missing because no one who completed quest. clicked "yes" for TE03 item
+    problem_rq_open = TE07_02, # important: TE07_01 missing because no one who completed quest. clicked "yes" for TE03 item
     problem_sampling_open = TE07_03,
     problem_data_open = TE07_04,
     problem_measures_open = TE07_05,
