@@ -215,4 +215,5 @@ survey <- survey %>%
 # 01.5 Changing type for analysis ----------------------------------------------------------------
 
 survey <- survey |>
-  mutate(across(where(is.logical), as.numeric))
+  mutate(across(where(is.logical), as.numeric)) |>
+  as_tibble()
